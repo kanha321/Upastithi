@@ -8,7 +8,7 @@ Currently, it includes a hardcoded timetable for **MCA 3rd Semester @ MNNIT**, b
 
 ## 📌 Features
 
-- 📅 **Timetable View** with date-based subject listing  
+- 📅 **Timetable View** with date-based subject listing
 - ✅ **Mark Attendance** with 6 options:
   - Present
   - Absent
@@ -16,9 +16,14 @@ Currently, it includes a hardcoded timetable for **MCA 3rd Semester @ MNNIT**, b
   - Leave
   - Holiday
   - Cancelled
-- 💾 **Offline Storage** using JSON in internal storage  
-- 🗓️ View attendance status for any past or current date  
-- 🛡️ Lightweight, no permissions required, works completely offline  
+- 💾 **Offline Storage** using JSON in internal storage
+- 🗓️ View attendance status for any past or current date
+- 🛡️ Lightweight, no permissions required, works completely offline
+
+---
+
+## 📜 Changelogs
+- Changelogs are available in the [Changelog](Changelog.md) file.
 
 ---
 
@@ -29,14 +34,6 @@ Currently, it includes a hardcoded timetable for **MCA 3rd Semester @ MNNIT**, b
 - **Kotlinx Serialization** for local JSON storage
 - **MVVM Architecture**
 - **Material You UI**
----
-
-## 🚀 Future Plans
-
-- Dynamic timetable customization  
-- Export attendance report as PDF  
-- Dark/light theme switching  
-
 ---
 
 ## 🏫 Developed For
@@ -54,6 +51,6 @@ _**Upasthiti** (उपस्थिति)_ is a Sanskrit word that means **"Pres
 
 ## 📥 Installation
 
-Currently, this is an internal project. APK builds will be shared manually or via GitHub Releases in the future.
+You can download the latest APK from the [Releases](https://github.com/kanha321/Upastithi/releases)
 
 ---

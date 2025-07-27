@@ -13,6 +13,7 @@
 
 **Future Plans:**
 - Better UI/UX design
+- Custom Time Table Support
 - Improved data visualization
 - Data export options (CSV, JSON, maybe more)
 - Material You wallpaper-based colors
