@@ -15,5 +15,11 @@ enum class Subject(val displayName: String, val subjectId: String) {
         fun fromString(value: String?): Subject? { // Used to convert string to enum for database storage
             return entries.find { it.displayName == value }
         }
+        fun getAllSubjects(): List<Subject> {
+            return entries.toList()
+        }
+    }
+    override fun toString(): String {
+        return displayName
     }
 }

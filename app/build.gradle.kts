@@ -67,4 +67,6 @@ dependencies {
     implementation(libs.material.icons.core)
     implementation(libs.bundles.calendar)
     implementation(libs.kotlinx.serialization.json)
+
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
 }

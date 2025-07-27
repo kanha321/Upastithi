@@ -2,12 +2,13 @@ package com.kanhaji.attendancetracker.screen.home
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import com.kanhaji.attendancetracker.AndroidContext
+import com.kanhaji.attendancetracker.data.Subject
 import com.kanhaji.attendancetracker.data.attendance.AttendanceStatus
 import com.kanhaji.attendancetracker.data.attendance.AttendanceStorage
 import com.kanhaji.attendancetracker.entity.AttendanceEntity
 import com.kanhaji.attendancetracker.entity.ClassEntity
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import java.time.DayOfWeek
 
 /*
 
@@ -55,5 +56,27 @@ class HomeScreenModel : ScreenModel {
             date = date,
             time = time
         )
+    }
+
+    fun getAttendancesForSubject(
+        subject: Subject
+    ): Pair<String, Double> {
+        val attendances = AttendanceStorage.getAttendancesForSubject(subject)
+        // return a pair of strings representing two things first attended Classes/Total Classes and second the percentage of attendance
+        // Example: "5/10", 50.0
+        // To calculate the total classes held count all the items excluding those having attendanceStatus as leave holiday or cancelled
+        // To calculate the attended classes count all the items having attendanceStatus as present or proxy
+        val totalClasses = attendances.filter {
+            it.attendanceStatus != AttendanceStatus.LEAVE && it.attendanceStatus != AttendanceStatus.HOLIDAY && it.attendanceStatus != AttendanceStatus.CANCELLED
+        }.size
+        val attendedClasses = attendances.filter {
+            it.attendanceStatus == AttendanceStatus.PRESENT || it.attendanceStatus == AttendanceStatus.PROXY
+        }.size
+        val percentage = if (totalClasses > 0) {
+            (attendedClasses.toDouble() / totalClasses * 100).toDouble()
+        } else {
+            0.0
+        }
+        return Pair("$attendedClasses/$totalClasses", percentage)
     }
 }

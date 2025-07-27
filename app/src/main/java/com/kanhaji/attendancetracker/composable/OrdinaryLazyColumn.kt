@@ -31,6 +31,7 @@ fun GenericLazyColumn(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     listState: LazyListState = ListState.value,
     modifier: Modifier = Modifier,
+    key: Any? = null,
     // Card customization parameters
     onItemClick: ((Int) -> Unit)? = null,
     enabled: Boolean = true,
@@ -59,7 +60,7 @@ fun GenericLazyColumn(
         ),
         state = listState,
     ) {
-        items(itemCount) { index ->
+        items(count = itemCount, key = { index -> "$key-$index" }) { index ->
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

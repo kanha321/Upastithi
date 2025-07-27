@@ -151,7 +151,9 @@ fun ClassAttendanceStepperDialog(
                         step = 0 // Reset to initial step after saving
                     }
                 }) {
-                    Text("Done")
+                    Text(
+                        text = if (step == 0) "Done" else "Save",
+                    )
                 }
             }
         }

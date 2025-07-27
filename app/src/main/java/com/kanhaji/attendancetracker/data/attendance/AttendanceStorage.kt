@@ -2,6 +2,7 @@ package com.kanhaji.attendancetracker.data.attendance
 
 import android.content.Context
 import com.kanhaji.attendancetracker.AndroidContext
+import com.kanhaji.attendancetracker.data.Subject
 import com.kanhaji.attendancetracker.entity.AttendanceEntity
 import com.kanhaji.attendancetracker.entity.AttendanceEntitySerialized
 import com.kanhaji.attendancetracker.entity.toEntity
@@ -154,5 +155,18 @@ object AttendanceStorage {
             return true
         }
         return false
+    }
+
+    /**
+     * Get all attendance records for a specific subject as list
+     */
+    fun getAttendancesForSubject(
+        subject: Subject,
+        context: Context = AndroidContext.appContext
+    ): List<AttendanceEntity> {
+        val allAttendance = loadAttendanceList(context)
+        val attendances = allAttendance.filter { it.subject == subject }
+        println("getAttendancesForSubject screenModel: $attendances")
+        return attendances
     }
 }
