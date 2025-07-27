@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.kanhaji.attendancetracker"
+    namespace = "com.kanhaji.upastithi"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.kanhaji.attendancetracker"
+        applicationId = "com.kanhaji.upastithi"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
