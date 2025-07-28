@@ -2,9 +2,18 @@
 
 ---
 
+## [1.0.1] - 11:08 AM / 27 July 2025
+
+### Minor Changes
+
+- Added a hint for adding attendance records between calendar and records sections.
+- Changed the application package name (this won't change in future versions).
+
+---
+
 ## [1.0.0] - 08:11 AM / 27 July 2025
 
-### Initial Release
+### Initial Release (Don't use this version as it has a different package name)
 
 **Features:**
 - Subject-wise attendance tracking

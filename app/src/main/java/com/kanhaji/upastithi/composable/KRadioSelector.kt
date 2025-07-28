@@ -31,7 +31,7 @@ import com.kanhaji.upastithi.data.attendance.AttendanceStatus
 data class AttendanceItem(
     val status: AttendanceStatus,
     val icon: ImageVector,
-    val highLightColor: Color
+    val highLightColor: Color = status.color
 )
 
 @Composable

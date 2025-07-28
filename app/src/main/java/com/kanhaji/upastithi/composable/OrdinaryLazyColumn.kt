@@ -12,34 +12,36 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun GenericLazyColumn(
-    itemCount: Int = 100,
+    itemCount: Int,
+    modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     listState: LazyListState = ListState.value,
-    modifier: Modifier = Modifier,
     key: Any? = null,
-    // Card customization parameters
     onItemClick: ((Int) -> Unit)? = null,
     enabled: Boolean = true,
-    colors: CardColors = CardDefaults.outlinedCardColors(),
+    // THIS IS THE NEW PARAMETER FOR OUR COLOR RULE
+    containerColor: ((index: Int) -> Color)? = null,
     elevation: CardElevation = CardDefaults.outlinedCardElevation(),
-    border: BorderStroke = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+//    border: BorderStroke = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+    border: ((index: Int) -> BorderStroke)? = null,
     interactionSource: MutableInteractionSource? = null,
-    // Visual customization parameters
     externalCornerSize: Dp = 24.dp,
     internalCornerSize: Dp = 8.dp,
     itemSpacing: Dp = 4.dp,
@@ -87,15 +89,37 @@ fun GenericLazyColumn(
                     internalCornerSize = internalCornerSize
                 )
 
+                // 1. This logic decides which color to use for the card at the current 'index'
+                val currentContainerColor = if (containerColor != null) {
+                    // If a rule was provided in the parameters, use it
+                    containerColor(index)
+                } else {
+                    // Otherwise, use a default color from our theme
+                    MaterialTheme.colorScheme.surface
+                }
+
+                val border = if (border != null) {
+                    // If a border rule was provided, use it
+                    border(index)
+                } else {
+                    // Otherwise, use a default border color
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                }
+
+                // 2. Create the CardColors object using the color we just decided on.
+                val cardProperties = CardDefaults.outlinedCardColors(
+                    containerColor = if (currentContainerColor != MaterialTheme.colorScheme.surface) currentContainerColor.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+
+                // 3. Now we use this new 'cardProperties' variable for the card's colors.
                 if (onItemClick != null) {
                     OutlinedCard(
                         onClick = { onItemClick(index) },
-                        modifier = Modifier.fillMaxWidth().scale(scale)
-//                            .pointerHoverIcon(PointerIcon.Hand)
-                        ,
+                        modifier = Modifier.fillMaxWidth().scale(scale),
                         enabled = enabled,
                         shape = animatedShape,
-                        colors = colors,
+                        colors = cardProperties, // Use the new properties here
                         elevation = elevation,
                         border = border,
                         interactionSource = source
@@ -105,11 +129,9 @@ fun GenericLazyColumn(
                 } else {
                     OutlinedCard(
                         onClick = {},
-                        modifier = Modifier.fillMaxWidth().scale(scale)
-//                            .pointerHoverIcon(PointerIcon.Hand)
-                        ,
+                        modifier = Modifier.fillMaxWidth().scale(scale),
                         shape = animatedShape,
-                        colors = colors,
+                        colors = cardProperties, // And also here
                         elevation = elevation,
                         border = border,
                         interactionSource = source
@@ -122,6 +144,6 @@ fun GenericLazyColumn(
     }
 }
 
-object ListState{
+object ListState {
     lateinit var value: LazyListState
 }

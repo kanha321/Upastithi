@@ -169,4 +169,5 @@ object AttendanceStorage {
         println("getAttendancesForSubject screenModel: $attendances")
         return attendances
     }
+
 }

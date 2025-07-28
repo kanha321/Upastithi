@@ -1,5 +1,6 @@
 package com.kanhaji.upastithi.screen.home
 
+import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.model.ScreenModel
 import com.kanhaji.upastithi.AndroidContext
 import com.kanhaji.upastithi.data.Subject
@@ -78,5 +79,17 @@ class HomeScreenModel : ScreenModel {
             0.0
         }
         return Pair("$attendedClasses/$totalClasses", percentage)
+    }
+    // Add this entire function inside your HomeScreenModel class
+    fun getAttendanceColor(
+        classEntity: ClassEntity,
+        attendancesForDate: List<AttendanceEntity>,
+        defaultColor: Color
+    ): Color {
+        // 1. Find the attendance record that matches the class's time.
+        val matchingAttendance = attendancesForDate.firstOrNull { it.time == classEntity.time }
+
+        // 2. Return the color from the status, or the default color if no record/status exists.
+        return matchingAttendance?.attendanceStatus?.color ?: defaultColor
     }
 }
