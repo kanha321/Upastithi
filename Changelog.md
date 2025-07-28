@@ -2,6 +2,14 @@
 
 ---
 
+## [1.0.2] - 11:10 AM / 28 July 2025
+
+### Enhancements
+
+- Updated the attendance dialog to color-code the border and text of each class based on its saved attendance status.
+
+---
+
 ## [1.0.1] - 11:08 AM / 27 July 2025
 
 ### Minor Changes
