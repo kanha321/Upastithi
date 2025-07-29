@@ -15,8 +15,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 2
-        versionName = "v2.0.0-dev1.0"
-
+        versionName = "v2.0.0-dev1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -67,7 +66,6 @@ dependencies {
     implementation(libs.material.icons.core)
     implementation(libs.bundles.calendar)
     implementation(libs.kotlinx.serialization.json)
-    implementation("com.kizitonwose.calendar:compose:2.8.0")
 
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
 }

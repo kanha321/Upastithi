@@ -170,4 +170,8 @@ object AttendanceStorage {
         return attendances
     }
 
+    fun getAttendanceGroupedByDate(context: Context): Map<LocalDate, List<AttendanceEntity>> {
+        return loadAttendanceList(context)
+            .groupBy { it.date }
+    }
 }

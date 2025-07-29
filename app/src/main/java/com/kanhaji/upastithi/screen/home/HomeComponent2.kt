@@ -3,16 +3,21 @@ package com.kanhaji.upastithi.screen.home
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,12 +33,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kanhaji.upastithi.composable.GenericLazyColumn
 import com.kanhaji.upastithi.data.Subject
+import com.kanhaji.upastithi.data.attendance.AttendanceStatus
+import com.kanhaji.upastithi.entity.AttendanceEntity
 import com.kanhaji.upastithi.isDarkMode
 import com.kanhaji.upastithi.screen.home.components.ClassAttendanceStepperDialog
 import com.kanhaji.upastithi.screen.home.components.SubjectCardSingle
@@ -104,7 +113,9 @@ fun HomeComponent2(
             }
         )
         Text(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             text = "Click on date to view time table or add attendance record",
             textAlign = TextAlign.Center
         )
@@ -216,19 +227,33 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = day.date.dayOfMonth.toString(),
-                    modifier = Modifier.padding(8.dp),
-                    color = if (day.date.toKotlinLocalDate() == today) {
-                        MaterialTheme.colorScheme.surface
-                    } else if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
-                        MaterialTheme.colorScheme.onSurface
-                    } else if (day.date.toKotlinLocalDate() > today && day.position == DayPosition.MonthDate) {
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    } else {
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    },
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(4.dp)
+                ) {
+                    // Date number
+                    Text(
+                        text = day.date.dayOfMonth.toString(),
+                        color = if (day.date.toKotlinLocalDate() == today) {
+                            MaterialTheme.colorScheme.surface
+                        } else if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
+                            MaterialTheme.colorScheme.onSurface
+                        } else if (day.date.toKotlinLocalDate() > today && day.position == DayPosition.MonthDate) {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        } else {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        },
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+                    MultiDotIndicator(
+                        date = day.date.toKotlinLocalDate(),
+                        allAttendances = screenModel.attendanceByDate[day.date.toKotlinLocalDate()] ?: emptyList(),
+                        screenModel = screenModel
+                    )
+                }
             }
         }
     }
@@ -242,6 +267,21 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
         ) {
             showDateDialog = false
         }
+    }
+}
+
+@Composable
+fun getDotColorForDate(date: LocalDate, screenModel: HomeScreenModel): Color {
+    val attendanceList = screenModel.attendanceByDate[date] ?: return Color.Transparent
+
+    return when {
+        attendanceList.any { it.attendanceStatus == AttendanceStatus.ABSENT } -> AttendanceStatus.ABSENT.color
+        attendanceList.any { it.attendanceStatus == AttendanceStatus.PRESENT } -> AttendanceStatus.PRESENT.color
+        attendanceList.any { it.attendanceStatus == AttendanceStatus.PROXY } -> AttendanceStatus.PROXY.color
+        attendanceList.any { it.attendanceStatus == AttendanceStatus.LEAVE } -> AttendanceStatus.LEAVE.color
+        attendanceList.any { it.attendanceStatus == AttendanceStatus.CANCELLED } -> AttendanceStatus.CANCELLED.color
+        attendanceList.any { it.attendanceStatus == AttendanceStatus.HOLIDAY } -> AttendanceStatus.HOLIDAY.color
+        else -> Color.Transparent
     }
 }
 
@@ -260,6 +300,24 @@ fun DaysOfWeekTitle(daysOfWeek: List<DayOfWeek>) {
                     text = dow.name.take(3), style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MultiDotIndicator(date: LocalDate, allAttendances: List<AttendanceEntity>, screenModel: HomeScreenModel) {
+    val dotColors = screenModel.getAttendanceDotsForDate(date, allAttendances)
+
+    if (dotColors.isNotEmpty()) {
+        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            dotColors.forEach { color ->
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(color)
                 )
             }
         }

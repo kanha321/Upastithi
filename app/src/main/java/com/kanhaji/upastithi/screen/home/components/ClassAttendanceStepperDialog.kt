@@ -8,8 +8,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -172,8 +170,7 @@ fun ClassAttendanceStepperDialog(
                         screenModel.saveAttendance(
                             classEntity = selectedClass!!,
                             attendanceStatus = selectedAttendance,
-                            date,
-                            dayOfWeek
+                            date
                         )
                         println("Selected attendance status onDone: $selectedAttendance")
                         step = 0 // Reset to initial step after saving

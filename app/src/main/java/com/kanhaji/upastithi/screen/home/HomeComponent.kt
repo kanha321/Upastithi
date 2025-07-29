@@ -22,11 +22,8 @@ import com.kanhaji.upastithi.data.Subject
 import com.kanhaji.upastithi.screen.home.components.ClassAttendanceStepperDialog
 import com.kanhaji.upastithi.screen.home.components.SubjectCardSingle
 import com.kanhaji.upastithi.util.getClasses
-import io.github.boguszpawlowski.composecalendar.StaticCalendar
-import io.github.boguszpawlowski.composecalendar.day.DefaultDay
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.toKotlinLocalDate
 
 @Composable
 fun HomeComponent(screenModel: HomeScreenModel) {
@@ -41,18 +38,18 @@ fun HomeComponent(screenModel: HomeScreenModel) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        StaticCalendar(
-            dayContent = { dayState ->
-                DefaultDay(
-                    state = dayState,
-                    onClick = {
-                        selectedDate = dayState.date.toKotlinLocalDate()
-                        selectedDayOfWeek = dayState.date.dayOfWeek
-                        showDateDialog = true
-                    }
-                )
-            }
-        )
+//        StaticCalendar(
+//            dayContent = { dayState ->
+//                DefaultDay(
+//                    state = dayState,
+//                    onClick = {
+//                        selectedDate = dayState.date.toKotlinLocalDate()
+//                        selectedDayOfWeek = dayState.date.dayOfWeek
+//                        showDateDialog = true
+//                    }
+//                )
+//            }
+//        )
         Text(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             text = "Click on date to view time table or add attendance record",

@@ -2,6 +2,14 @@
 
 ---
 
+## [2.0.0-dev1.1] - 12:34 AM / 30 July 2025
+
+### Calendar Enhancements (dev build)
+
+- Added dots on the calendar to show the attendances of each class.
+
+---
+
 ## [2.0.0-dev1.0] - 09:03 PM / 29 July 2025
 
 ### Complete Calendar Overhaul (dev build)
