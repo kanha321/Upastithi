@@ -53,4 +53,8 @@ _**Upasthiti** (उपस्थिति)_ is a Sanskrit word that means **"Pres
 
 You can download the latest APK from the [Releases](https://github.com/kanha321/Upastithi/releases)
 
+Note: Pre-release builds can be unstable and may not work as intended but your records will always be safe
+
+It is always recommended to install the `latest` marked apk as they are stable
+
 ---
