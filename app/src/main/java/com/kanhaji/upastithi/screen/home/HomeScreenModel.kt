@@ -8,6 +8,7 @@ import com.kanhaji.upastithi.data.attendance.AttendanceStatus
 import com.kanhaji.upastithi.data.attendance.AttendanceStorage
 import com.kanhaji.upastithi.entity.AttendanceEntity
 import com.kanhaji.upastithi.entity.ClassEntity
+import com.kanhaji.upastithi.util.roundTo
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
@@ -74,7 +75,7 @@ class HomeScreenModel : ScreenModel {
             it.attendanceStatus == AttendanceStatus.PRESENT || it.attendanceStatus == AttendanceStatus.PROXY
         }.size
         val percentage = if (totalClasses > 0) {
-            (attendedClasses.toDouble() / totalClasses * 100).toDouble()
+            (attendedClasses.toDouble() / totalClasses * 100).toDouble().roundTo(2)
         } else {
             0.0
         }

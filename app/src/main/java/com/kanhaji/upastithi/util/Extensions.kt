@@ -24,3 +24,7 @@ fun String.toTitleCase(): String {
             }
         }
 }
+
+fun Double.roundTo(decimals: Int): Double {
+    return "%.${decimals}f".format(this).toDouble()
+}

@@ -2,6 +2,17 @@
 
 ---
 
+## [2.0.0-dev1.0] - 09:03 PM / 29 July 2025
+
+### Complete Calendar Overhaul (dev build)
+
+- Created a custom calendar using a new library to match the Material You design language.
+- Calendar is now compatible with dark theme, making every component compatible with dark theme.
+- Disabled future attendance marking.
+- Attendance percentage is now rounded up to 2 decimal places.
+
+---
+
 ## [1.0.2] - 11:10 AM / 28 July 2025
 
 ### Enhancements

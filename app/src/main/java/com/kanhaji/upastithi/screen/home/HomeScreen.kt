@@ -14,6 +14,6 @@ object HomeScreen: Screen {
             HomeScreenModel()
         }
 
-        HomeComponent(screenModel)
+        HomeComponent2(screenModel)
     }
 }
