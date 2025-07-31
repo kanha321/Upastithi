@@ -14,8 +14,8 @@ android {
         applicationId = "com.kanhaji.upastithi"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "v2.0.0-dev1.1"
+        versionCode = 3
+        versionName = "v2.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

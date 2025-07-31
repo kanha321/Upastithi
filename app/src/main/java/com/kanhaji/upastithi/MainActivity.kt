@@ -23,7 +23,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kanhaji.upastithi.screen.home.HomeScreen
 import com.kanhaji.upastithi.ui.theme.AttendanceTrackerTheme
 
-var isDarkMode by mutableStateOf(false)
+//var isDarkMode by mutableStateOf(false)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         AndroidContext.appContext = this@MainActivity
         setContent {
             AttendanceTrackerTheme(
-                darkTheme = isDarkMode,
+                darkTheme = false
             ) {
                 // Get the system UI controller
                 val systemUiController = rememberSystemUiController()

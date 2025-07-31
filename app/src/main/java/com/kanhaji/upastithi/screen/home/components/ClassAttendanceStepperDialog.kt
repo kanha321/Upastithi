@@ -26,7 +26,6 @@ import com.kanhaji.upastithi.composable.KRadioSelector
 import com.kanhaji.upastithi.data.attendance.AttendanceStatus
 import com.kanhaji.upastithi.entity.ClassEntity
 import com.kanhaji.upastithi.screen.home.HomeScreenModel
-import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
 @Composable
@@ -34,7 +33,6 @@ fun ClassAttendanceStepperDialog(
     classes: List<ClassEntity>,
     screenModel: HomeScreenModel,
     date: LocalDate,
-    dayOfWeek: DayOfWeek,
     onDismiss: () -> Unit,
 ) {
     var step by remember { mutableIntStateOf(0) }
@@ -50,7 +48,6 @@ fun ClassAttendanceStepperDialog(
         },
         text = {
             if (classes.isEmpty()) {
-                // Show a fun and friendly message if no classes are available
                 Text("It's a quiet day! No classes available for attendance.")
                 return@AlertDialog
             }
