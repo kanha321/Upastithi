@@ -2,6 +2,41 @@
 
 ---
 
+## [1.1.0] - 09:48 AM / 31 July 2025
+
+### Release Highlights
+
+- Corrected timetable for Wednesday (dirty fix).
+- Cleaned up and organized the codebase.
+- Bumped the version code.
+- Integrated calendar changes from previous dev versions:
+    - Custom calendar using a new library to match the Material You design language.
+    - Calendar is now compatible with dark theme, making every component compatible with dark theme.
+    - Disabled future attendance marking.
+    - Attendance percentage is now rounded up to 2 decimal places.
+    - Added dots on the calendar to show the attendances of each class.
+
+---
+
+## [2.0.0-dev1.1] - 12:34 AM / 30 July 2025
+
+### Calendar Enhancements (dev build)
+
+- Added dots on the calendar to show the attendances of each class.
+
+---
+
+## [2.0.0-dev1.0] - 09:03 PM / 29 July 2025
+
+### Complete Calendar Overhaul (dev build)
+
+- Created a custom calendar using a new library to match the Material You design language.
+- Calendar is now compatible with dark theme, making every component compatible with dark theme.
+- Disabled future attendance marking.
+- Attendance percentage is now rounded up to 2 decimal places.
+
+---
+
 ## [1.0.2] - 11:10 AM / 28 July 2025
 
 ### Enhancements

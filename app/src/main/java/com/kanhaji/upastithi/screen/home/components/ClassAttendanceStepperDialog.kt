@@ -8,8 +8,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,7 +26,6 @@ import com.kanhaji.upastithi.composable.KRadioSelector
 import com.kanhaji.upastithi.data.attendance.AttendanceStatus
 import com.kanhaji.upastithi.entity.ClassEntity
 import com.kanhaji.upastithi.screen.home.HomeScreenModel
-import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
 @Composable
@@ -36,7 +33,6 @@ fun ClassAttendanceStepperDialog(
     classes: List<ClassEntity>,
     screenModel: HomeScreenModel,
     date: LocalDate,
-    dayOfWeek: DayOfWeek,
     onDismiss: () -> Unit,
 ) {
     var step by remember { mutableIntStateOf(0) }
@@ -52,7 +48,6 @@ fun ClassAttendanceStepperDialog(
         },
         text = {
             if (classes.isEmpty()) {
-                // Show a fun and friendly message if no classes are available
                 Text("It's a quiet day! No classes available for attendance.")
                 return@AlertDialog
             }
@@ -172,8 +167,7 @@ fun ClassAttendanceStepperDialog(
                         screenModel.saveAttendance(
                             classEntity = selectedClass!!,
                             attendanceStatus = selectedAttendance,
-                            date,
-                            dayOfWeek
+                            date
                         )
                         println("Selected attendance status onDone: $selectedAttendance")
                         step = 0 // Reset to initial step after saving

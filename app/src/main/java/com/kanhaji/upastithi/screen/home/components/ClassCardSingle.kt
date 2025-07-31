@@ -16,7 +16,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kanhaji.upastithi.data.Subject
 import com.kanhaji.upastithi.entity.ClassEntity
+import kotlinx.datetime.DayOfWeek
 
 @Composable
 fun ClassCardSingle(
@@ -45,7 +47,7 @@ fun ClassCardSingle(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = classEntity.time,
+                text = if (classEntity.dayOfWeek == DayOfWeek.WEDNESDAY && classEntity.subject == Subject.ANALYSIS_OF_ALGORITHMS) "13:00 - 14:00" else classEntity.time,
                 textAlign = TextAlign.Start,
             )
             Text(
