@@ -173,7 +173,7 @@ fun SplashComponent() {
 
         // Version info at bottom
         Text(
-            text = "Version 1.0.0",
+            text = "Version 2.0.0",
             style = MaterialTheme.typography.labelMedium.copy(
                 letterSpacing = 0.5.sp
             ),
