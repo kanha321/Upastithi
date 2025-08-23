@@ -2,7 +2,7 @@
 
 _**Upasthiti**_ (उपस्थिति) is a simple and elegant attendance tracker app designed for students. It allows you to mark daily attendance status with ease, keeping a personal offline record in your device storage.
 
-Currently, it includes a hardcoded timetable for **MCA 3rd Semester @ MNNIT**, but this will be updated in future versions.
+Currently, it includes **pre-configured timetables for MCA 1st & 3rd Semester @ MNNIT**, which will be expanded in future versions.
 
 ---
 
@@ -23,7 +23,7 @@ Currently, it includes a hardcoded timetable for **MCA 3rd Semester @ MNNIT**, b
 ---
 
 ## 📜 Changelogs
-- Changelogs are available in the [Changelog](Changelog.md) file.
+Changelogs are available in the [Changelog](Changelog.md) file.
 
 ---
 
@@ -34,12 +34,13 @@ Currently, it includes a hardcoded timetable for **MCA 3rd Semester @ MNNIT**, b
 - **Kotlinx Serialization** for local JSON storage
 - **MVVM Architecture**
 - **Material You UI**
+
 ---
 
 ## 🏫 Developed For
 
-**MCA 3rd Semester students of MNNIT Allahabad**  
-(Pre-configured with a static weekly timetable)
+**MCA students of MNNIT Allahabad**  
+(Currently pre-configured with static timetables for 1st & 3rd Semesters)
 
 ---
 
@@ -51,10 +52,14 @@ _**Upasthiti** (उपस्थिति)_ is a Sanskrit word that means **"Pres
 
 ## 📥 Installation
 
-You can download the latest APK from the [Releases](https://github.com/kanha321/Upastithi/releases)
+You can download the latest APK from the [Releases](https://github.com/kanha321/Upastithi/releases).
 
-Note: Pre-release builds can be unstable and may not work as intended but your records will always be safe
-
-It is always recommended to install the `latest` marked apk as they are stable
+> ⚡ Note: Pre-release builds may be unstable and may not work as intended. However, your records will always remain safe.  
+> It is always recommended to install the APK marked `latest` for the most stable experience.
 
 ---
+
+## ✨ Just a Note
+
+This is a **personal hobby project**, so you’ll find quite a few fun _“jugaads”_ inside 🚀  
+It may not follow all the best practices — but that’s part of the charm!
