@@ -10,7 +10,6 @@ import com.kanhaji.upastithi.data.attendance.AttendanceStorage
 import com.kanhaji.upastithi.entity.AttendanceEntity
 import com.kanhaji.upastithi.entity.ClassEntity
 import com.kanhaji.upastithi.util.roundTo
-import io.github.boguszpawlowski.composecalendar.kotlinxDateTime.now
 import kotlinx.datetime.LocalDate
 
 /*
@@ -98,8 +97,17 @@ class HomeScreenModel : ScreenModel {
     }
 
     fun getAttendanceDotsForDate(date: LocalDate, allAttendances: List<AttendanceEntity>): List<Color> {
+        fun parseStartMinutes(timeRange: String): Int {
+            val start = timeRange.substringBefore(" - ")
+            val parts = start.split(":")
+            val h = parts.getOrNull(0)?.toIntOrNull() ?: 0
+            val m = parts.getOrNull(1)?.toIntOrNull() ?: 0
+            return h * 60 + m
+        }
+
         return allAttendances
             .filter { it.date == date && it.attendanceStatus != null }
+            .sortedBy { parseStartMinutes(it.time) }   // Ensures 9 AM before 10 AM
             .map { it.attendanceStatus!!.color }
     }
 }

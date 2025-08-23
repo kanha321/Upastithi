@@ -2,6 +2,32 @@
 
 ---
 
+## [2.0.0] - 12:41 PM / 23 August 2025
+
+### Complete UI Overhaul
+
+- **Navigation Enhancement**: Split calendar and attendance sections into separate sections with bottom navigation bar.
+- **Academic Updates**: Added MCA 1st Sem TimeTable.
+- **Theming System**: 
+  - Added proper theming support with light/dark theme options.
+  - Implemented pitch black theming.
+  - Added wallpaper-based colors and custom color options.
+- **UI/UX Improvements**:
+  - Added icons to attendance status indicators.
+  - Added fun random messages when clicking on weekends (Saturdays/Sundays).
+  - Added outlined dots for each day that correctly hint attendance status for classes.
+  - Outlined Sunday with red and Saturday with blue borders.
+  - Timetable cards now show room numbers instead of subject codes.
+  - Added teacher names in attendance section for each subject.
+- **Calendar Features**:
+  - Added option to navigate to today.
+  - Added option to view timetable for future dates while still restricting attendance marking.
+- **Bug Fixes**:
+  - Fixed day starting with Monday on some devices.
+  - Fixed dots showing in wrong order.
+
+---
+
 ## [1.1.0] - 09:48 AM / 31 July 2025
 
 ### Release Highlights

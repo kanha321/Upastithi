@@ -5,65 +5,29 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.kanhaji.basics.datastore.PrefsManager
+import com.kanhaji.basics.theme.BasicKolorTheme
 import com.kanhaji.upastithi.screen.home.HomeScreen
-import com.kanhaji.upastithi.ui.theme.AttendanceTrackerTheme
+import com.kanhaji.upastithi.screen.splash.SplashScreen
 
-//var isDarkMode by mutableStateOf(false)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        PrefsManager.init(this@MainActivity)
+        PrefsManager.init(this)
         AndroidContext.appContext = this@MainActivity
         setContent {
-            AttendanceTrackerTheme(
-                darkTheme = false
-            ) {
-                // Get the system UI controller
-                val systemUiController = rememberSystemUiController()
-                // Get the primary color from the theme
-                val primaryColor = MaterialTheme.colorScheme.primary
-
-                // Use a SideEffect to update the system bars
-                SideEffect {
-                    // Set the status bar color
-                    systemUiController.setStatusBarColor(
-                        color = primaryColor,
-                        darkIcons = true // Set to false if you want light icons
-                    )
-
-                    // You can also set the navigation bar color if you want
-                    // systemUiController.setNavigationBarColor(
-                    //     color = primaryColor,
-                    //     darkIcons = false
-                    // )
-                }
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Navigator(HomeScreen) { navigator ->
-                            SlideTransition(navigator)
-                        }
-                    }
+            BasicKolorTheme {
+                Navigator(SplashScreen) { navigator ->
+                    SlideTransition(navigator)
                 }
             }
         }
@@ -73,16 +37,3 @@ class MainActivity : ComponentActivity() {
 object AndroidContext {
     lateinit var appContext: Context
 }
-
-//@Composable
-//fun ExampleScreen() {
-//    val items = listOf("Option 1", "Option 2", "Option 3")
-//
-//    KRadioSelector(
-//        items = items,
-//        initialSelection = items.first(),
-//        onSelectionChanged = { selected ->
-//            // Handle selection change
-//        }
-//    )
-//}

@@ -65,9 +65,7 @@ dependencies {
 
     implementation(libs.material.kolor)
     implementation(libs.colorpicker.compose)
-    implementation(libs.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.bundles.calendar)
     implementation(libs.kotlinx.serialization.json)
-
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
 }

@@ -79,7 +79,7 @@ fun HomeComponent2(
             state = state,
             dayContent = { Day(day = it, screenModel = screenModel) },
             monthHeader = {
-                DaysOfWeekTitle(daysOfWeek = daysOfWeek)
+                DaysOfWeekTitle()
             }
         )
         Text(

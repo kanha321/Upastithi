@@ -6,6 +6,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Celebration
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.FlightTakeoff
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kanhaji.upastithi.composable.AttendanceItem
 import com.kanhaji.upastithi.composable.GenericLazyColumn
@@ -26,6 +33,9 @@ import com.kanhaji.upastithi.composable.KRadioSelector
 import com.kanhaji.upastithi.data.attendance.AttendanceStatus
 import com.kanhaji.upastithi.entity.ClassEntity
 import com.kanhaji.upastithi.screen.home.HomeScreenModel
+import com.kanhaji.upastithi.util.KToast
+import com.kanhaji.upastithi.util.noClassesMessages
+import io.github.boguszpawlowski.composecalendar.kotlinxDateTime.now
 import kotlinx.datetime.LocalDate
 
 @Composable
@@ -38,17 +48,18 @@ fun ClassAttendanceStepperDialog(
     var step by remember { mutableIntStateOf(0) }
     var selectedClass by remember { mutableStateOf<ClassEntity?>(null) }
     var selectedAttendance by remember { mutableStateOf<AttendanceStatus?>(null) }
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = if (step == 0) "Select Class" else "Select Attendance Status"
+                text = if (step == 0 && classes.isNotEmpty()) "Select Class" else if(step == 0) "(❁´◡`❁)" else "Select Attendance Status"
             )
         },
         text = {
             if (classes.isEmpty()) {
-                Text("It's a quiet day! No classes available for attendance.")
+                Text(noClassesMessages.random())
                 return@AlertDialog
             }
             LaunchedEffect(selectedAttendance) {
@@ -92,14 +103,18 @@ fun ClassAttendanceStepperDialog(
                         },
 
                         onItemClick = { index ->
-                            selectedClass = classes[index]
 
-                            val classAttendance = screenModel.getAttendanceForClass(
-                                date = date,
-                                time = classes[index].time
-                            )
-                            selectedAttendance = classAttendance?.attendanceStatus
-                            step = 1
+                            if (date > LocalDate.now()) {
+                                KToast.show(context, "Cannot mark attendance for future dates.")
+                            } else {
+                                selectedClass = classes[index]
+                                val classAttendance = screenModel.getAttendanceForClass(
+                                    date = date,
+                                    time = classes[index].time
+                                )
+                                selectedAttendance = classAttendance?.attendanceStatus
+                                step = 1
+                            }
                         }
                     ) { index ->
                         ClassCardSingle(classes[index])
@@ -112,27 +127,27 @@ fun ClassAttendanceStepperDialog(
                         items = listOf(
                             AttendanceItem(
                                 status = AttendanceStatus.PRESENT,
-                                icon = Icons.Default.Star,
+                                icon = Icons.Default.CheckCircle,
                             ),
                             AttendanceItem(
                                 status = AttendanceStatus.ABSENT,
-                                icon = Icons.Default.Star,
+                                icon = Icons.Default.Cancel,
                             ),
                             AttendanceItem(
                                 status = AttendanceStatus.PROXY,
-                                icon = Icons.Default.Star,
+                                icon = Icons.Default.PersonAdd,
                             ),
                             AttendanceItem(
                                 status = AttendanceStatus.LEAVE,
-                                icon = Icons.Default.Star,
+                                icon = Icons.Default.FlightTakeoff,
                             ),
                             AttendanceItem(
                                 status = AttendanceStatus.HOLIDAY,
-                                icon = Icons.Default.Star,
+                                icon = Icons.Default.Celebration,
                             ),
                             AttendanceItem(
                                 status = AttendanceStatus.CANCELLED,
-                                icon = Icons.Default.Star,
+                                icon = Icons.Default.Block,
                             )
                         ),
                         initialSelection = selectedAttendance?.displayName,

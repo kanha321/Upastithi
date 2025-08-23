@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 
-object HomeScreen: Screen {
+object HomeScreen : Screen {
     private fun readResolve(): Any = HomeScreen
 
     @Composable
@@ -14,6 +14,6 @@ object HomeScreen: Screen {
             HomeScreenModel()
         }
 
-        HomeComponent2(screenModel)
+        HomeComponent(screenModel)
     }
 }

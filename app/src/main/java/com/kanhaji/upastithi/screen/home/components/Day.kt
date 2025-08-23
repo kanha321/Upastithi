@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kanhaji.upastithi.screen.home.HomeScreenModel
@@ -29,6 +30,7 @@ import com.kanhaji.upastithi.util.KToast
 import com.kanhaji.upastithi.util.getClasses
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
+import com.kizitonwose.calendar.core.daysOfWeek
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -55,16 +57,16 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
     ) {
         OutlinedCard(
             onClick = {
-                if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
+//                if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
                     selectedDate = day.date.toKotlinLocalDate()
                     selectedDayOfWeek = day.date.dayOfWeek
                     showDateDialog = true
                     return@OutlinedCard
-                }
-                if (day.date.toKotlinLocalDate() > today && day.position == DayPosition.MonthDate) {
-                    KToast.show(context, "Cannot add future attendance", Toast.LENGTH_SHORT)
-                    return@OutlinedCard
-                }
+//                }
+//                if (day.date.toKotlinLocalDate() > today && day.position == DayPosition.MonthDate) {
+//                    KToast.show(context, "Cannot add future attendance", Toast.LENGTH_SHORT)
+//                    return@OutlinedCard
+//                }
             },
             shape = if (day.date.toKotlinLocalDate() == today) {
                 RoundedCornerShape(100.dp)
@@ -87,7 +89,32 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
                     hoveredElevation = 0.dp
                 )
             },
-            border = if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() < today) {
+            border = if (day.date.dayOfWeek == DayOfWeek.SUNDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
+                BorderStroke(
+                    color = Color.Red.copy(0.5f),
+                    width = 1.dp
+                )
+            } else if (day.date.dayOfWeek == DayOfWeek.SATURDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
+                BorderStroke(
+                    color = Color.Blue.copy(0.5f),
+                    width = 1.dp
+                )
+            } else if (day.date.dayOfWeek == DayOfWeek.SUNDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() > today) {
+                BorderStroke(
+                    color = Color.Red.copy(0.3f),
+                    width = 1.dp
+                )
+            } else if (day.date.dayOfWeek == DayOfWeek.SATURDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() > today) {
+                BorderStroke(
+                    color = Color.Blue.copy(0.3f),
+                    width = 1.dp
+                )
+            } else if (day.date.toKotlinLocalDate() == today) {
+                BorderStroke(
+                    color = MaterialTheme.colorScheme.primary,
+                    width = 2.dp
+                )
+            } else if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() < today) {
                 BorderStroke(
                     color = MaterialTheme.colorScheme.primary,
                     width = 1.dp
@@ -147,8 +174,7 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
                     Spacer(modifier = Modifier.height(2.dp))
                     MultiDotIndicator(
                         date = day.date.toKotlinLocalDate(),
-                        allAttendances = screenModel.attendanceByDate[day.date.toKotlinLocalDate()] ?: emptyList(),
-                        screenModel = screenModel
+                        allAttendances = screenModel.attendanceByDate[day.date.toKotlinLocalDate()] ?: emptyList()
                     )
                 }
             }

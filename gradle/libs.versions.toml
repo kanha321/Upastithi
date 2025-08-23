@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.0-alpha01"
+agp = "8.13.0-rc01"
 kotlin = "2.2.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -51,6 +51,7 @@ colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", vers
 
 # icons
 material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIcons" }
+androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
 # datastore
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }

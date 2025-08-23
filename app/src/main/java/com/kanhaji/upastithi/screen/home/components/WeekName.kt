@@ -16,9 +16,11 @@ import kotlinx.datetime.DayOfWeek
 import kotlin.collections.forEach
 
 @Composable
-fun DaysOfWeekTitle(daysOfWeek: List<DayOfWeek>) {
+fun DaysOfWeekTitle() {
+    val labels = listOf("SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT")
+
     Row(modifier = Modifier.fillMaxWidth()) {
-        daysOfWeek.forEach { dow ->
+        labels.forEach { label ->
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -27,7 +29,8 @@ fun DaysOfWeekTitle(daysOfWeek: List<DayOfWeek>) {
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = dow.name.take(3), style = MaterialTheme.typography.labelMedium,
+                    text = label,
+                    style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp
                 )
@@ -35,4 +38,3 @@ fun DaysOfWeekTitle(daysOfWeek: List<DayOfWeek>) {
         }
     }
 }
-
