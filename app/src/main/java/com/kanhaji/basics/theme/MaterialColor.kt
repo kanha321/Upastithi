@@ -71,12 +71,14 @@ private fun ObserveSystemDarkMode(isSystemDark: Boolean) {
     }
 }
 
+// Kotlin
 @Composable
 private fun InitializeThemeFromPreferences(systemPrimaryColor: Color, isSystemDark: Boolean) {
     var hasInitialized by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         if (!hasInitialized) {
             ThemeManager.defaultSeed = systemPrimaryColor
+            // Keep the original state object; just set its value
             ThemeManager.customColor.value = systemPrimaryColor
 
             val savedTheme = PrefsManager.getString(PrefsResources.APP_THEME)
@@ -86,24 +88,26 @@ private fun InitializeThemeFromPreferences(systemPrimaryColor: Color, isSystemDa
             val savedPaletteStyle = PrefsManager.getString(PrefsResources.PALETTE_STYLE)
             val savedContrastLevel = PrefsManager.getDouble(PrefsResources.CONTRAST_LEVEL)
 
-            ThemeManager.currentThemeType = savedTheme?.let {
-                runCatching { ThemeManager.ThemeType.valueOf(it) }
-                    .getOrDefault(ThemeManager.ThemeType.SYSTEM)
-            } ?: ThemeManager.ThemeType.SYSTEM
+            ThemeManager.currentThemeType = savedTheme
+                ?.let { runCatching { ThemeManager.ThemeType.valueOf(it) }.getOrNull() }
+                ?: ThemeManager.ThemeType.SYSTEM
 
             ThemeManager.isAmoled = savedAmoled ?: false
             ThemeManager.isDynamicColorSupported = isDynamicColorSupported()
-            ThemeManager.isDynamicColor = savedDynamic ?: ThemeManager.isDynamicColorSupported
+            ThemeManager.isDynamicColor = savedDynamic
+                ?: (ThemeManager.isDynamicColor && ThemeManager.isDynamicColorSupported)
 
-            ThemeManager.customColor = mutableStateOf(
-                savedCustomColor?.let { hexToColor(it) } ?: systemPrimaryColor
-            )
+            // Update value instead of replacing the state holder
+            savedCustomColor
+                ?.let { hexToColor(it) }
+                ?.let { ThemeManager.customColor.value = it }
 
-            ThemeManager.paletteStyle = savedPaletteStyle?.let {
-                runCatching { PaletteStyle.valueOf(it) }.getOrNull()
-            } ?: ThemeManager.paletteStyle
+            savedPaletteStyle
+                ?.let { runCatching { PaletteStyle.valueOf(it) }.getOrNull() }
+                ?.let { ThemeManager.paletteStyle = it }
 
-            ThemeManager.contrastLevel = savedContrastLevel ?: ThemeManager.contrastLevel
+            savedContrastLevel
+                ?.let { ThemeManager.contrastLevel = it }
 
             ThemeManager.isDarkTheme = when (ThemeManager.currentThemeType) {
                 ThemeManager.ThemeType.LIGHT -> false

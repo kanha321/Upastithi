@@ -14,4 +14,14 @@ object KToast {
         toast = Toast.makeText(context, text, duration)
         toast?.show()
     }
+
+    fun makeText(
+        context: Context,
+        text: String,
+        duration: Int = Toast.LENGTH_SHORT
+    ): Toast {
+        toast?.cancel()
+        toast = Toast.makeText(context, text, duration)
+        return toast!!
+    }
 }

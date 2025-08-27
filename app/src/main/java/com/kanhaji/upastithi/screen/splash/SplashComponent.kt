@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.kanhaji.upastithi.screen.home.HomeScreen
+import com.kanhaji.upastithi.util.UpasthitiUtils
 import kotlinx.coroutines.delay
 
 @Composable
@@ -145,7 +146,7 @@ fun SplashComponent() {
 
             // App Name with entrance animation
             Text(
-                text = "Upastithi",
+                text = "Upasthiti",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Medium,
                     letterSpacing = (-0.5).sp
@@ -173,7 +174,7 @@ fun SplashComponent() {
 
         // Version info at bottom
         Text(
-            text = "Version 2.0.0",
+            text = "Version " + UpasthitiUtils.appVersionName?.replace("v", ""),
             style = MaterialTheme.typography.labelMedium.copy(
                 letterSpacing = 0.5.sp
             ),

@@ -33,7 +33,7 @@ import com.kanhaji.upastithi.data.attendance.AttendanceStatus
 import com.kanhaji.upastithi.entity.ClassEntity
 import com.kanhaji.upastithi.screen.home.HomeScreenModel
 import com.kanhaji.upastithi.util.KToast
-import com.kanhaji.upastithi.util.noClassesMessages
+import com.kanhaji.upastithi.util.UpasthitiUtils
 import io.github.boguszpawlowski.composecalendar.kotlinxDateTime.now
 import kotlinx.datetime.LocalDate
 
@@ -58,7 +58,7 @@ fun ClassAttendanceStepperDialog(
         },
         text = {
             if (classes.isEmpty()) {
-                Text(noClassesMessages.random())
+                Text(text = UpasthitiUtils.noClassesMessages.random())
                 return@AlertDialog
             }
             LaunchedEffect(selectedAttendance) {

@@ -10,6 +10,7 @@ import cafe.adriel.voyager.transitions.SlideTransition
 import com.kanhaji.basics.datastore.PrefsManager
 import com.kanhaji.basics.theme.BasicKolorTheme
 import com.kanhaji.upastithi.screen.splash.SplashScreen
+import com.kanhaji.upastithi.util.UpasthitiUtils
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,6 +18,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         PrefsManager.init(this)
         AndroidContext.appContext = this@MainActivity
+        UpasthitiUtils.appVersionCode = packageManager.getPackageInfo(packageName, 0).longVersionCode
+        UpasthitiUtils.appVersionName = packageManager.getPackageInfo(packageName, 0).versionName
+        println("App Version Code: ${UpasthitiUtils.appVersionCode}")
+        println("App Version Name: ${UpasthitiUtils.appVersionName}")
         setContent {
             BasicKolorTheme {
                 Navigator(SplashScreen) { navigator ->

@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.kanhaji.upastithi"
-        minSdk = 26
+        minSdk = 28
         targetSdk = 36
         
         versionCode = 4
