@@ -28,3 +28,20 @@ fun String.toTitleCase(): String {
 fun Double.roundTo(decimals: Int): Double {
     return "%.${decimals}f".format(this).toDouble()
 }
+
+fun Long.formatTransferSpeed(): String {
+    return when {
+        this >= 1_073_741_824 -> "%.2f GB/s".format(this / 1_073_741_824.0)
+        this >= 1_048_576 -> "%.2f MB/s".format(this / 1_048_576.0)
+        this >= 1024 -> "%.2f KB/s".format(this / 1024.0)
+        else -> "$this B/s"
+    }
+}
+
+fun Long.formatTime(): String {
+    return when {
+        this >= 3600 -> "${this / 3600}h ${(this % 3600) / 60}m"
+        this >= 60 -> "${this / 60}m ${this % 60}s"
+        else -> "${this}s"
+    }
+}

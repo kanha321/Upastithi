@@ -16,6 +16,7 @@ colorpickerCompose = "1.1.2"
 materialIcons = "1.7.3"
 datastore = "1.1.7"
 material3 = "1.4.0-alpha18"
+ktor = "3.2.3"
 
 #customs
 calendar = "2.8.0"
@@ -64,6 +65,17 @@ compose-kotlinx-datetime = { module = "io.github.boguszpawlowski.composecalendar
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 
+# ktor
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
+
 compose-calendar = { group = "com.kizitonwose.calendar", name = "compose", version.ref = "calendar" }
 
 [plugins]
@@ -86,4 +98,14 @@ voyager = [
 calendar = [
     "compose-calendar",
     "compose-kotlinx-datetime"
+]
+
+ktor = [
+    "ktor-client-core",
+    "ktor-client-okhttp",
+    "ktor-client-content-negotiation",
+    "ktor-client-logging",
+    "ktor-client-serialization",
+    "ktor-serialization-kotlinx-json",
+    "ktor-client-auth"
 ]

@@ -1,6 +1,21 @@
 package com.kanhaji.upastithi.util
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+
+
+enum class Course{
+    MCA1, MCA3
+}
 object UpasthitiUtils {
+
+    val course = Course.MCA1
+
+    const val BASE_URL = "https://kanha321.github.io/Upastithi"
+    const val UPDATE_ENDPOINT = "/update.json"
+
+    var updateChecked by mutableStateOf(false)
     val noClassesMessages = listOf(
         // Motivational
         "No classes today - perfect time to level up your skills!",

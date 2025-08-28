@@ -62,6 +62,7 @@ dependencies {
 
     implementation(libs.bundles.voyager)
     implementation(libs.bundles.datastore)
+    implementation(libs.bundles.ktor)
 
     implementation(libs.material.kolor)
     implementation(libs.colorpicker.compose)

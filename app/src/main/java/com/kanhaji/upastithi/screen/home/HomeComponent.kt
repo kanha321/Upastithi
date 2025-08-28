@@ -1,5 +1,6 @@
 package com.kanhaji.upastithi.screen.home
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -17,13 +18,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.kanhaji.basics.screens.settings.SettingsScreen
+import com.kanhaji.basics.util.Updater
+import com.kanhaji.upastithi.screen.home.components.UpdateButton
 import com.kanhaji.upastithi.screen.home.pages.AttendanceSection
 import com.kanhaji.upastithi.screen.home.pages.CalendarSection
+import com.kanhaji.upastithi.util.UpasthitiUtils
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,6 +39,11 @@ fun HomeComponent(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
     val scope = rememberCoroutineScope()
     val navigator = LocalNavigator.currentOrThrow
+
+    LaunchedEffect(Unit) {
+        if (!UpasthitiUtils.updateChecked)
+            screenModel.getUpdateInfo()
+    }
 
     Scaffold(
         topBar = {
@@ -47,6 +57,9 @@ fun HomeComponent(
                             imageVector = Icons.Outlined.Settings,
                             contentDescription = "Settings"
                         )
+                    }
+                    AnimatedVisibility(screenModel.isUpdateAvailable && Updater.downloadProgress != 1f) {
+                        UpdateButton()
                     }
                 }
             )

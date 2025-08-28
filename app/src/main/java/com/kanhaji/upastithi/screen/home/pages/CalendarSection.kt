@@ -24,13 +24,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.kanhaji.basics.entity.Update
+import com.kanhaji.basics.util.Updater
 import com.kanhaji.upastithi.screen.home.HomeScreenModel
 import com.kanhaji.upastithi.screen.home.components.Day
 import com.kanhaji.upastithi.screen.home.components.DaysOfWeekTitle
@@ -68,11 +74,13 @@ fun CalendarSection(
 
     val canGoPrev = visibleMonth.isAfter(startMonth)
     val canGoNext = visibleMonth.isBefore(endMonth)
+
+
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-
         ElevatedCard(
             modifier = Modifier
                 .padding(horizontal = 12.dp, vertical = 8.dp)
