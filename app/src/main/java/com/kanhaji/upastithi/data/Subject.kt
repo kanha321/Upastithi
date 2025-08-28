@@ -103,8 +103,8 @@ enum class Subject(
     FOUNDATIONS_OF_LOGIC(
         displayName = "Foundations of Logic",
         subjectId = "CS31104",
-        teacher = "Dr. Shailendra Shukla",
-        teacherInitials = "SSH"
+        teacher = "Guest Faculty",
+        teacherInitials = "GF2"
     ),
     PROGRAMMING_AND_PROBLEM_SOLVING_LAB_GROUP_A(
         displayName = "(Group A) Programming and Problem Solving",
