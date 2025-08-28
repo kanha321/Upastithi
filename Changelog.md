@@ -2,13 +2,26 @@
 
 ---
 
+## [2.1.0] - 02:15 PM / 28 August 2025
+
+### New Features & Improvements
+
+- **App Theming**:
+  - Fixed color issues in **Light Theme** for better readability and consistency.
+- **In-App Updater**:
+  - Added support for in-app updates so users can update seamlessly without leaving the app.
+- **Academic Updates**:
+  - Added updated **1st Year Timetable**.
+
+---
+
 ## [2.0.0] - 12:41 PM / 23 August 2025
 
 ### Complete UI Overhaul
 
 - **Navigation Enhancement**: Split calendar and attendance sections into separate sections with bottom navigation bar.
 - **Academic Updates**: Added MCA 1st Sem TimeTable.
-- **Theming System**: 
+- **Theming System**:
   - Added proper theming support with light/dark theme options.
   - Implemented pitch black theming.
   - Added wallpaper-based colors and custom color options.
@@ -36,11 +49,11 @@
 - Cleaned up and organized the codebase.
 - Bumped the version code.
 - Integrated calendar changes from previous dev versions:
-    - Custom calendar using a new library to match the Material You design language.
-    - Calendar is now compatible with dark theme, making every component compatible with dark theme.
-    - Disabled future attendance marking.
-    - Attendance percentage is now rounded up to 2 decimal places.
-    - Added dots on the calendar to show the attendances of each class.
+  - Custom calendar using a new library to match the Material You design language.
+  - Calendar is now compatible with dark theme, making every component compatible with dark theme.
+  - Disabled future attendance marking.
+  - Attendance percentage is now rounded up to 2 decimal places.
+  - Added dots on the calendar to show the attendances of each class.
 
 ---
 
