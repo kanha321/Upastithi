@@ -1,7 +1,7 @@
 {
-  "latestVersionCode": 5,
-  "latestVersionName": "2.1.0",
+  "latestVersionCode": 6,
+  "latestVersionName": "2.5.0",
   "downloadMCA1": "https://github.com/kanha321/Upastithi/releases/download/2.1.0/Upasthiti-MCA-1st.apk",
-  "downloadMCA3": "https://github.com/kanha321/Upastithi/releases/download/2.0.0/Upasthiti-MCA-3rd.apk",
+  "downloadMCA3": "https://github.com/kanha321/Upastithi/releases/download/2.5.0/Upasthiti-MCA-3rd.apk",
   "changelog": "https://kanha321.github.io/Upastithi/Changelog.md"
 }

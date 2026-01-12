@@ -6,7 +6,7 @@
 
 ### Academic Updates
 
-- Updated **MCA 3rd Year Timetable**.
+- Updated **MCA 4th Sem Timetable**.
 
 ---
 
