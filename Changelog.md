@@ -2,6 +2,14 @@
 
 ---
 
+## [2.5.0] - 03:10 AM / 13 January 2026
+
+### Academic Updates
+
+- Updated **MCA 3rd Year Timetable**.
+
+---
+
 ## [2.1.0] - 02:15 PM / 28 August 2025
 
 ### New Features & Improvements

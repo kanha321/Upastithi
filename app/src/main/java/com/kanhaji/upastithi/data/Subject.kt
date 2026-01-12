@@ -76,84 +76,141 @@ package com.kanhaji.upastithi.data
 //    }
 //}
 
+//enum class Subject(
+//    val displayName: String,
+//    val subjectId: String,
+//    val teacher: String,
+//    val teacherInitials: String
+//) {
+//    PROGRAMMING_AND_PROBLEM_SOLVING(
+//        displayName = "Programming and Problem Solving",
+//        subjectId = "CS31101",
+//        teacher = "Prof. M. M. Gore",
+//        teacherInitials = "MMG"
+//    ),
+//    PRINCIPLES_OF_IT_INDUSTRY_MANAGEMENT(
+//        displayName = "Principles of IT Industry Management",
+//        subjectId = "CS31102",
+//        teacher = "???",
+//        teacherInitials = "?"
+//    ),
+//    DIGITAL_COMPUTER_ORGANIZATION(
+//        displayName = "Digital Computer Organization",
+//        subjectId = "CS31103",
+//        teacher = "Mr. Rajesh Tripathi",
+//        teacherInitials = "RT"
+//    ),
+//    FOUNDATIONS_OF_LOGIC(
+//        displayName = "Foundations of Logic",
+//        subjectId = "CS31104",
+//        teacher = "Guest Faculty",
+//        teacherInitials = "GF2"
+//    ),
+//    PROGRAMMING_AND_PROBLEM_SOLVING_LAB_GROUP_A(
+//        displayName = "(Group A) Programming and Problem Solving",
+//        subjectId = "CS31201",
+//        teacher = "Dr. Kailash W. Kalare",
+//        teacherInitials = "KK"
+//    ),
+//    DIGITAL_COMPUTER_ORGANIZATION_LAB_GROUP_A(
+//        displayName = "(Group A) Digital Computer Organization",
+//        subjectId = "CS31202",
+//        teacher = "Mr. Rajesh Tripathi",
+//        teacherInitials = "RT"
+//    ),
+//    SHELL_PROGRAMMING_LAB_GROUP_A(
+//        displayName = "(Group A) Shell Programming",
+//        subjectId = "CS31203",
+//        teacher = "Dr. Ranvijay",
+//        teacherInitials = "RAN"
+//    ),
+//    PROGRAMMING_AND_PROBLEM_SOLVING_LAB_GROUP_B(
+//        displayName = "(Group B) Programming and Problem Solving",
+//        subjectId = "CS31301",
+//        teacher = "Dr. Kailash W. Kalare",
+//        teacherInitials = "KK"
+//    ),
+//    DIGITAL_COMPUTER_ORGANIZATION_LAB_GROUP_B(
+//        displayName = "(Group B) Digital Computer Organization",
+//        subjectId = "CS31302",
+//        teacher = "Mr. Rajesh Tripathi",
+//        teacherInitials = "RT"
+//    ),
+//    SHELL_PROGRAMMING_LAB_GROUP_B(
+//        displayName = "(Group B) Shell Programming",
+//        subjectId = "CS31303",
+//        teacher = "Dr. Ranvijay",
+//        teacherInitials = "RAN"
+//    );
+//
+//    companion object {
+//        fun fromString(value: String?): Subject? { // Used to convert string to enum for database storage
+//            return entries.find { it.displayName == value }
+//        }
+//
+//        fun getAllSubjects(): List<Subject> {
+//            return entries.toList()
+//        }
+//    }
+//
+//    override fun toString(): String {
+//        return displayName
+//    }
+//}
+
+//4th Sem Subjects
+
 enum class Subject(
     val displayName: String,
     val subjectId: String,
     val teacher: String,
     val teacherInitials: String
 ) {
-    PROGRAMMING_AND_PROBLEM_SOLVING(
-        displayName = "Programming and Problem Solving",
-        subjectId = "CS31101",
-        teacher = "Prof. M. M. Gore",
-        teacherInitials = "MMG"
-    ),
-    PRINCIPLES_OF_IT_INDUSTRY_MANAGEMENT(
-        displayName = "Principles of IT Industry Management",
-        subjectId = "CS31102",
-        teacher = "???",
-        teacherInitials = "?"
-    ),
-    DIGITAL_COMPUTER_ORGANIZATION(
-        displayName = "Digital Computer Organization",
-        subjectId = "CS31103",
-        teacher = "Mr. Rajesh Tripathi",
+    COMPUTER_GRAPHICS(
+        displayName = "Computer Graphics",
+        subjectId = "CS34101",
+        teacher = "Prof. Rajesh Tripathi",
         teacherInitials = "RT"
     ),
-    FOUNDATIONS_OF_LOGIC(
-        displayName = "Foundations of Logic",
-        subjectId = "CS31104",
-        teacher = "Guest Faculty",
-        teacherInitials = "GF2"
+    SOFTWARE_ENGINEERING(
+        displayName = "Software Engineering",
+        subjectId = "CS34102",
+        teacher = "Dr. Anoj Kumar",
+        teacherInitials = "AJK"
     ),
-    PROGRAMMING_AND_PROBLEM_SOLVING_LAB_GROUP_A(
-        displayName = "(Group A) Programming and Problem Solving",
-        subjectId = "CS31201",
-        teacher = "Dr. Kailash W. Kalare",
-        teacherInitials = "KK"
+    COMPUTER_NETWORK(
+        displayName = "Computer Network",
+        subjectId = "CS34103",
+        teacher = "Dr. Shashwati Banerjea",
+        teacherInitials = "SHB"
     ),
-    DIGITAL_COMPUTER_ORGANIZATION_LAB_GROUP_A(
-        displayName = "(Group A) Digital Computer Organization",
-        subjectId = "CS31202",
-        teacher = "Mr. Rajesh Tripathi",
+    DATA_MINING(
+        displayName = "Data Mining",
+        subjectId = "CS34104",
+        teacher = "Prof. A. K. Singh",
+        teacherInitials = "AKS"
+    ),
+    IMAGE_PROCESSING(
+        displayName = "Image Processing",
+        subjectId = "CS34312",
+        teacher = "Dr. Dushyant Kumar Singh",
+        teacherInitials = "DUS"
+    ),
+    COMPUTER_GRAPHICS_LAB(
+        displayName = "(Lab) Computer Graphics",
+        subjectId = "CS34201",
+        teacher = "Prof. Rajesh Tripathi",
         teacherInitials = "RT"
     ),
-    SHELL_PROGRAMMING_LAB_GROUP_A(
-        displayName = "(Group A) Shell Programming",
-        subjectId = "CS31203",
-        teacher = "Dr. Ranvijay",
-        teacherInitials = "RAN"
-    ),
-    PROGRAMMING_AND_PROBLEM_SOLVING_LAB_GROUP_B(
-        displayName = "(Group B) Programming and Problem Solving",
-        subjectId = "CS31301",
-        teacher = "Dr. Kailash W. Kalare",
-        teacherInitials = "KK"
-    ),
-    DIGITAL_COMPUTER_ORGANIZATION_LAB_GROUP_B(
-        displayName = "(Group B) Digital Computer Organization",
-        subjectId = "CS31302",
-        teacher = "Mr. Rajesh Tripathi",
-        teacherInitials = "RT"
-    ),
-    SHELL_PROGRAMMING_LAB_GROUP_B(
-        displayName = "(Group B) Shell Programming",
-        subjectId = "CS31303",
-        teacher = "Dr. Ranvijay",
-        teacherInitials = "RAN"
+    COMPUTER_NETWORK_LAB(
+        displayName = "(Lab) Computer Network",
+        subjectId = "CS34202",
+        teacher = "Dr. Shashwati Banerjea",
+        teacherInitials = "SHB"
     );
 
     companion object {
-        fun fromString(value: String?): Subject? { // Used to convert string to enum for database storage
-            return entries.find { it.displayName == value }
-        }
-
-        fun getAllSubjects(): List<Subject> {
-            return entries.toList()
-        }
-    }
-
-    override fun toString(): String {
-        return displayName
+        fun fromString(value: String?): Subject? = entries.find { it.displayName == value }
+        fun getAllSubjects(): List<Subject> = entries.toList()
     }
 }
