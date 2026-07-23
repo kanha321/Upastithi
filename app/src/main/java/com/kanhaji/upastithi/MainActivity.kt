@@ -17,6 +17,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         PrefsManager.init(this)
+        com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(applicationContext)
         AndroidContext.appContext = this@MainActivity
         UpasthitiUtils.appVersionCode = packageManager.getPackageInfo(packageName, 0).longVersionCode
         UpasthitiUtils.appVersionName = packageManager.getPackageInfo(packageName, 0).versionName

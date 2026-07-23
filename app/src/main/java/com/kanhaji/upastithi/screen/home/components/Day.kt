@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,7 +39,7 @@ import kotlinx.datetime.toKotlinLocalDate
 import kotlinx.datetime.todayIn
 import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
 fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
     val context = LocalContext.current
@@ -46,133 +49,127 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
     var selectedDayOfWeek by remember { mutableStateOf<DayOfWeek?>(null) }
     val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
 
-
     Box(
         modifier = Modifier
             .aspectRatio(1f),
         contentAlignment = Alignment.Center
     ) {
-        OutlinedCard(
-            onClick = {
-//                if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
+        CompositionLocalProvider(LocalRippleConfiguration provides null) {
+            OutlinedCard(
+                onClick = {
                     selectedDate = day.date.toKotlinLocalDate()
                     selectedDayOfWeek = day.date.dayOfWeek
                     showDateDialog = true
                     return@OutlinedCard
-//                }
-//                if (day.date.toKotlinLocalDate() > today && day.position == DayPosition.MonthDate) {
-//                    KToast.show(context, "Cannot add future attendance", Toast.LENGTH_SHORT)
-//                    return@OutlinedCard
-//                }
-            },
-            shape = if (day.date.toKotlinLocalDate() == today) {
-                RoundedCornerShape(100.dp)
-            } else {
-                RoundedCornerShape(8.dp)
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(2.dp),
-            elevation = if (day.position == DayPosition.MonthDate) {
-                CardDefaults.elevatedCardElevation(
-                    defaultElevation = 2.dp,
-                    pressedElevation = 4.dp,
-                    hoveredElevation = 3.dp
-                )
-            } else {
-                CardDefaults.elevatedCardElevation(
-                    defaultElevation = 0.dp,
-                    pressedElevation = 0.dp,
-                    hoveredElevation = 0.dp
-                )
-            },
-            border = if (day.date.dayOfWeek == DayOfWeek.SUNDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
-                BorderStroke(
-                    color = Color.Red.copy(0.5f),
-                    width = 1.dp
-                )
-            } else if (day.date.dayOfWeek == DayOfWeek.SATURDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
-                BorderStroke(
-                    color = Color.Blue.copy(0.5f),
-                    width = 1.dp
-                )
-            } else if (day.date.dayOfWeek == DayOfWeek.SUNDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() > today) {
-                BorderStroke(
-                    color = Color.Red.copy(0.3f),
-                    width = 1.dp
-                )
-            } else if (day.date.dayOfWeek == DayOfWeek.SATURDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() > today) {
-                BorderStroke(
-                    color = Color.Blue.copy(0.3f),
-                    width = 1.dp
-                )
-            } else if (day.date.toKotlinLocalDate() == today) {
-                BorderStroke(
-                    color = MaterialTheme.colorScheme.primary,
-                    width = 2.dp
-                )
-            } else if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() < today) {
-                BorderStroke(
-                    color = MaterialTheme.colorScheme.primary,
-                    width = 1.dp
-                )
-            } else if (day.date.toKotlinLocalDate() > today && day.position == DayPosition.MonthDate) {
-                BorderStroke(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                    width = 1.dp
-                )
-            } else {
-                BorderStroke(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                    width = 0.dp
-                )
-            },
-            colors = CardDefaults.outlinedCardColors(
-                containerColor = if (day.date.toKotlinLocalDate() == today) {
-                    MaterialTheme.colorScheme.primary
-                } else if (day.position == DayPosition.MonthDate) {
-                    MaterialTheme.colorScheme.surface
-                } else {
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                 },
-                contentColor = if (day.date.toKotlinLocalDate() == today) {
-                    MaterialTheme.colorScheme.onPrimary
-                } else if (day.position == DayPosition.MonthDate) {
-                    MaterialTheme.colorScheme.onSurface
+                shape = if (day.date.toKotlinLocalDate() == today) {
+                    RoundedCornerShape(100.dp)
                 } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                }
-            )
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                    RoundedCornerShape(8.dp)
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(2.dp),
+                elevation = if (day.position == DayPosition.MonthDate) {
+                    CardDefaults.elevatedCardElevation(
+                        defaultElevation = 2.dp,
+                        pressedElevation = 4.dp,
+                        hoveredElevation = 3.dp
+                    )
+                } else {
+                    CardDefaults.elevatedCardElevation(
+                        defaultElevation = 0.dp,
+                        pressedElevation = 0.dp,
+                        hoveredElevation = 0.dp
+                    )
+                },
+                border = if (day.date.dayOfWeek == DayOfWeek.SUNDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
+                    BorderStroke(
+                        color = Color.Red.copy(0.5f),
+                        width = 1.dp
+                    )
+                } else if (day.date.dayOfWeek == DayOfWeek.SATURDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
+                    BorderStroke(
+                        color = Color.Blue.copy(0.5f),
+                        width = 1.dp
+                    )
+                } else if (day.date.dayOfWeek == DayOfWeek.SUNDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() > today) {
+                    BorderStroke(
+                        color = Color.Red.copy(0.3f),
+                        width = 1.dp
+                    )
+                } else if (day.date.dayOfWeek == DayOfWeek.SATURDAY && day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() > today) {
+                    BorderStroke(
+                        color = Color.Blue.copy(0.3f),
+                        width = 1.dp
+                    )
+                } else if (day.date.toKotlinLocalDate() == today) {
+                    BorderStroke(
+                        color = MaterialTheme.colorScheme.primary,
+                        width = 2.dp
+                    )
+                } else if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() < today) {
+                    BorderStroke(
+                        color = MaterialTheme.colorScheme.primary,
+                        width = 1.dp
+                    )
+                } else if (day.date.toKotlinLocalDate() > today && day.position == DayPosition.MonthDate) {
+                    BorderStroke(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                        width = 1.dp
+                    )
+                } else {
+                    BorderStroke(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                        width = 0.dp
+                    )
+                },
+                colors = CardDefaults.outlinedCardColors(
+                    containerColor = if (day.date.toKotlinLocalDate() == today) {
+                        MaterialTheme.colorScheme.primary
+                    } else if (day.position == DayPosition.MonthDate) {
+                        MaterialTheme.colorScheme.surface
+                    } else {
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+                    },
+                    contentColor = if (day.date.toKotlinLocalDate() == today) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else if (day.position == DayPosition.MonthDate) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    }
+                )
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(4.dp)
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Date number
-                    Text(
-                        text = day.date.dayOfMonth.toString(),
-                        color = if (day.date.toKotlinLocalDate() == today) {
-                            MaterialTheme.colorScheme.surface
-                        } else if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
-                            MaterialTheme.colorScheme.onSurface
-                        } else if (day.date.toKotlinLocalDate() > today && day.position == DayPosition.MonthDate) {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        } else {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        },
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(4.dp)
+                    ) {
+                        Text(
+                            text = day.date.dayOfMonth.toString(),
+                            color = if (day.date.toKotlinLocalDate() == today) {
+                                MaterialTheme.colorScheme.surface
+                            } else if (day.position == DayPosition.MonthDate && day.date.toKotlinLocalDate() <= today) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else if (day.date.toKotlinLocalDate() > today && day.position == DayPosition.MonthDate) {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            },
+                            style = MaterialTheme.typography.bodyMedium
+                        )
 
-                    Spacer(modifier = Modifier.height(2.dp))
-                    MultiDotIndicator(
-                        date = day.date.toKotlinLocalDate(),
-                        allAttendances = screenModel.attendanceByDate[day.date.toKotlinLocalDate()] ?: emptyList()
-                    )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        MultiDotIndicator(
+                            date = day.date.toKotlinLocalDate(),
+                            allAttendances = screenModel.attendanceByDate[day.date.toKotlinLocalDate()] ?: emptyList()
+                        )
+                    }
                 }
             }
         }

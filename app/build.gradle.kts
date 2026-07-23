@@ -69,4 +69,6 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.bundles.calendar)
     implementation(libs.kotlinx.serialization.json)
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
 }
+

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kanhaji.upastithi.data.Subject
+import com.kanhaji.upastithi.data.TimeTableManager
 import com.kanhaji.upastithi.screen.home.HomeScreenModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,6 +38,8 @@ fun AttendanceSection(
     screenModel: HomeScreenModel
 ) {
     val refreshKey = remember { mutableIntStateOf(0) }
+    // Read activeTimetableData to trigger recomposition when PDF is loaded
+    val activeTimetable = TimeTableManager.activeTimetableData
     val subjects = Subject.getAllSubjects()
 
     LazyColumn(
@@ -43,7 +47,7 @@ fun AttendanceSection(
             .fillMaxSize()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 16.dp)
+        contentPadding = PaddingValues(top = 16.dp, bottom = 90.dp)
     ) {
         item {
             Text(
@@ -84,6 +88,7 @@ private fun SubjectAttendanceCard(
 
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
         border = BorderStroke(
             color = MaterialTheme.colorScheme.primary,
             width = 1.dp

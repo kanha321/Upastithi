@@ -40,6 +40,7 @@ import com.kanhaji.basics.util.Updater
 import com.kanhaji.upastithi.screen.home.HomeScreenModel
 import com.kanhaji.upastithi.screen.home.components.Day
 import com.kanhaji.upastithi.screen.home.components.DaysOfWeekTitle
+import com.kanhaji.upastithi.screen.home.components.InfoNoteCard
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import kotlinx.coroutines.launch
@@ -190,45 +191,7 @@ fun CalendarSection(
         }
         Spacer(modifier = Modifier.height(16.dp))
         InfoNoteCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(all = 12.dp)
-                .padding(bottom = 40.dp),
             text = "Tap a date to view timetable or add attendance"
         )
-    }
-}
-
-@Composable
-private fun InfoNoteCard(
-    text: String,
-    modifier: Modifier = Modifier,
-    icon: ImageVector = Icons.Outlined.Info,
-//    onClick: (() -> Unit)? = null
-) {
-//    val clickable = if (onClick != null) Modifier.clickable { onClick() } else Modifier
-
-    ElevatedCard(
-        modifier = modifier
-//            .then(clickable)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text = text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
