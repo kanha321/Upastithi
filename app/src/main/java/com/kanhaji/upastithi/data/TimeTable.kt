@@ -342,37 +342,45 @@ import java.time.DayOfWeek
 // 4th Sem TimeTable
 object TimeTable {
 
+    private val CG = Subject("Computer Graphics", "CS34101", "Prof. Rajesh Tripathi", "RT")
+    private val SE = Subject("Software Engineering", "CS34102", "Dr. Anoj Kumar", "AJK")
+    private val CN = Subject("Computer Network", "CS34103", "Dr. Shashwati Banerjea", "SHB")
+    private val DM = Subject("Data Mining", "CS34104", "Prof. A. K. Singh", "AKS")
+    private val IP = Subject("Image Processing", "CS34312", "Dr. Dushyant Kumar Singh", "DUS")
+    private val CG_LAB = Subject("(Lab) Computer Graphics", "CS34201", "Prof. Rajesh Tripathi", "RT")
+    private val CN_LAB = Subject("(Lab) Computer Network", "CS34202", "Dr. Shashwati Banerjea", "SHB")
+
     val MONDAY: List<ClassEntity> = listOf(
         ClassEntity(
-            subject = Subject.COMPUTER_GRAPHICS_LAB,
+            subject = CG_LAB,
             time = "09:00 - 12:00",
             dayOfWeek = DayOfWeek.MONDAY,
             roomNo = "L2 Lab",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.COMPUTER_NETWORK,
+            subject = CN,
             time = "12:00 - 13:00",
             dayOfWeek = DayOfWeek.MONDAY,
             roomNo = "GS3",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.COMPUTER_GRAPHICS,
+            subject = CG,
             time = "14:00 - 15:00",
             dayOfWeek = DayOfWeek.MONDAY,
             roomNo = "NLH1",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.IMAGE_PROCESSING,
+            subject = IP,
             time = "15:00 - 16:00",
             dayOfWeek = DayOfWeek.MONDAY,
             roomNo = "NLH1",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.IMAGE_PROCESSING,
+            subject = IP,
             time = "16:00 - 17:00",
             dayOfWeek = DayOfWeek.MONDAY,
             roomNo = "NLH1",
@@ -382,28 +390,28 @@ object TimeTable {
 
     val TUESDAY: List<ClassEntity> = listOf(
         ClassEntity(
-            subject = Subject.IMAGE_PROCESSING,
+            subject = IP,
             time = "12:00 - 13:00",
             dayOfWeek = DayOfWeek.TUESDAY,
             roomNo = "GS8",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.SOFTWARE_ENGINEERING,
+            subject = SE,
             time = "14:00 - 15:00",
             dayOfWeek = DayOfWeek.TUESDAY,
             roomNo = "NLH2",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.SOFTWARE_ENGINEERING,
+            subject = SE,
             time = "15:00 - 16:00",
             dayOfWeek = DayOfWeek.TUESDAY,
             roomNo = "NLH2",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.COMPUTER_GRAPHICS,
+            subject = CG,
             time = "17:00 - 18:00",
             dayOfWeek = DayOfWeek.TUESDAY,
             roomNo = "NLH2",
@@ -413,21 +421,21 @@ object TimeTable {
 
     val WEDNESDAY: List<ClassEntity> = listOf(
         ClassEntity(
-            subject = Subject.COMPUTER_NETWORK_LAB,
+            subject = CN_LAB,
             time = "10:00 - 13:00",
             dayOfWeek = DayOfWeek.WEDNESDAY,
             roomNo = "L3 Lab",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.DATA_MINING,
+            subject = DM,
             time = "15:00 - 16:00",
             dayOfWeek = DayOfWeek.WEDNESDAY,
             roomNo = "NLH1",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.DATA_MINING,
+            subject = DM,
             time = "16:00 - 17:00",
             dayOfWeek = DayOfWeek.WEDNESDAY,
             roomNo = "NLH1",
@@ -437,28 +445,28 @@ object TimeTable {
 
     val THURSDAY: List<ClassEntity> = listOf(
         ClassEntity(
-            subject = Subject.COMPUTER_NETWORK,
+            subject = CN,
             time = "14:00 - 15:00",
             dayOfWeek = DayOfWeek.THURSDAY,
             roomNo = "NLH1",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.DATA_MINING,
+            subject = DM,
             time = "15:00 - 16:00",
             dayOfWeek = DayOfWeek.THURSDAY,
             roomNo = "NLH1",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.COMPUTER_GRAPHICS,
+            subject = CG,
             time = "16:00 - 17:00",
             dayOfWeek = DayOfWeek.THURSDAY,
             roomNo = "NLH1",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.COMPUTER_GRAPHICS,
+            subject = CG,
             time = "17:00 - 18:00",
             dayOfWeek = DayOfWeek.THURSDAY,
             roomNo = "NLH1",
@@ -468,21 +476,21 @@ object TimeTable {
 
     val FRIDAY: List<ClassEntity> = listOf(
         ClassEntity(
-            subject = Subject.SOFTWARE_ENGINEERING,
+            subject = SE,
             time = "09:00 - 10:00",
             dayOfWeek = DayOfWeek.FRIDAY,
             roomNo = "GS8",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.COMPUTER_NETWORK,
+            subject = CN,
             time = "11:00 - 12:00",
             dayOfWeek = DayOfWeek.FRIDAY,
             roomNo = "NLH1",
             attendanceStatus = null
         ),
         ClassEntity(
-            subject = Subject.COMPUTER_NETWORK,
+            subject = CN,
             time = "12:00 - 13:00",
             dayOfWeek = DayOfWeek.FRIDAY,
             roomNo = "NLH1",
@@ -492,4 +500,4 @@ object TimeTable {
 
     val SATURDAY: List<ClassEntity> = emptyList()
     val SUNDAY: List<ClassEntity> = emptyList()
-}
+}
