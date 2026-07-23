@@ -1,4 +1,4 @@
-package com.kanhaji.upastithi.screen.home.pages
+package com.kanhaji.upastithi.features.home.ui.pages
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -57,18 +57,18 @@ import com.kanhaji.basics.composables.RadioSelectionDialog
 import com.kanhaji.basics.datastore.PrefsManager
 import com.kanhaji.upastithi.data.LocalPdfParser
 import com.kanhaji.upastithi.data.TimeTableManager
-import com.kanhaji.upastithi.entity.DetectedTimetable
-import com.kanhaji.upastithi.entity.ScheduleEvent
-import com.kanhaji.upastithi.entity.TimetableData
-import com.kanhaji.upastithi.screen.home.HomeScreenModel
-import com.kanhaji.upastithi.screen.home.components.AddClassDialog
-import com.kanhaji.upastithi.screen.home.components.DaySchedulePager
-import com.kanhaji.upastithi.screen.home.components.EditClassDialog
-import com.kanhaji.upastithi.screen.home.components.FullScreenPdfDialog
-import com.kanhaji.upastithi.screen.home.components.ResetTimetableDialog
-import com.kanhaji.upastithi.screen.home.components.TimetablePdfCard
-import com.kanhaji.upastithi.screen.home.components.TimetablePdfPreviewCard
-import com.kanhaji.upastithi.screen.home.components.TimetableTabRow
+import com.kanhaji.upastithi.features.home.domain.model.DetectedTimetable
+import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
+import com.kanhaji.upastithi.features.home.domain.model.TimetableData
+import com.kanhaji.upastithi.features.home.ui.HomeScreenModel
+import com.kanhaji.upastithi.features.home.ui.components.AddClassDialog
+import com.kanhaji.upastithi.features.home.ui.components.DaySchedulePager
+import com.kanhaji.upastithi.features.home.ui.components.EditClassDialog
+import com.kanhaji.upastithi.features.home.ui.components.FullScreenPdfDialog
+import com.kanhaji.upastithi.features.home.ui.components.ResetTimetableDialog
+import com.kanhaji.upastithi.features.home.ui.components.TimetablePdfCard
+import com.kanhaji.upastithi.features.home.ui.components.TimetablePdfPreviewCard
+import com.kanhaji.upastithi.features.home.ui.components.TimetableTabRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File

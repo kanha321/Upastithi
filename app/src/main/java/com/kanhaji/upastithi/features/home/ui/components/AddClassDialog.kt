@@ -1,4 +1,4 @@
-package com.kanhaji.upastithi.screen.home.components
+package com.kanhaji.upastithi.features.home.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kanhaji.basics.composables.RadioItem
 import com.kanhaji.basics.composables.RadioSelectionDialog
-import com.kanhaji.upastithi.entity.ScheduleEvent
+import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
 
 @Composable
 fun AddClassDialog(

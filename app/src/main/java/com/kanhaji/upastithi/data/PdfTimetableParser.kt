@@ -1,7 +1,7 @@
 package com.kanhaji.upastithi.data
 
-import com.kanhaji.upastithi.entity.ParsedClassSlot
-import com.kanhaji.upastithi.entity.ParsedTimetableResult
+import com.kanhaji.upastithi.features.home.domain.model.ParsedClassSlot
+import com.kanhaji.upastithi.features.home.domain.model.ParsedTimetableResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.DayOfWeek

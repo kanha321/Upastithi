@@ -1,4 +1,4 @@
-package com.kanhaji.upastithi.screen.home.components
+package com.kanhaji.upastithi.features.home.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.kanhaji.upastithi.entity.ClassEntity
+import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
 import kotlinx.datetime.DayOfWeek
 
 @Composable

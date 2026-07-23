@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.kanhaji.upastithi.data.TimeTableManager
-import com.kanhaji.upastithi.entity.ScheduleEvent
+import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
 import com.kanhaji.upastithi.screen.edit.components.EditClassActionButtons
 import com.kanhaji.upastithi.screen.edit.components.EditClassTopAppBar
 import com.kanhaji.upastithi.screen.edit.components.EditCourseInfoCard

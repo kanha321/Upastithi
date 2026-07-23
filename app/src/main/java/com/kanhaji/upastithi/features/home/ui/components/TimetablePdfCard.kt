@@ -1,4 +1,4 @@
-package com.kanhaji.upastithi.screen.home.components
+package com.kanhaji.upastithi.features.home.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement

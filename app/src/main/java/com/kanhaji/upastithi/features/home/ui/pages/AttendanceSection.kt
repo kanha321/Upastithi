@@ -59,12 +59,41 @@ fun AttendanceSection(
             )
         }
 
-        items(subjects) { subject ->
-            SubjectAttendanceCard(
-                subject = subject,
-                screenModel = screenModel,
-                refreshKey = refreshKey.intValue
-            )
+        if (subjects.isEmpty()) {
+            item {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "No Timetable Loaded",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Upload or select a timetable PDF in the Timetable tab to automatically extract your subjects and track attendance.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        } else {
+            items(subjects) { subject ->
+                SubjectAttendanceCard(
+                    subject = subject,
+                    screenModel = screenModel,
+                    refreshKey = refreshKey.intValue
+                )
+            }
         }
     }
 }

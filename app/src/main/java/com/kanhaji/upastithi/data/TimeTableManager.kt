@@ -5,10 +5,12 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.kanhaji.upastithi.entity.ClassEntity
-import com.kanhaji.upastithi.entity.CourseInfo
-import com.kanhaji.upastithi.entity.ScheduleEvent
-import com.kanhaji.upastithi.entity.TimetableData
+import com.kanhaji.upastithi.features.home.data.Subject
+import com.kanhaji.upastithi.features.home.data.TimeTable
+import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
+import com.kanhaji.upastithi.features.home.domain.model.CourseInfo
+import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
+import com.kanhaji.upastithi.features.home.domain.model.TimetableData
 import kotlinx.datetime.DayOfWeek
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -268,14 +270,6 @@ object TimeTableManager {
     }
 
     private fun getDefaultClasses(dayOfWeek: DayOfWeek): List<ClassEntity> {
-        return when (dayOfWeek) {
-            DayOfWeek.MONDAY -> TimeTable.MONDAY
-            DayOfWeek.TUESDAY -> TimeTable.TUESDAY
-            DayOfWeek.WEDNESDAY -> TimeTable.WEDNESDAY
-            DayOfWeek.THURSDAY -> TimeTable.THURSDAY
-            DayOfWeek.FRIDAY -> TimeTable.FRIDAY
-            DayOfWeek.SATURDAY -> TimeTable.SATURDAY
-            DayOfWeek.SUNDAY -> TimeTable.SUNDAY
-        }
+        return emptyList()
     }
 }

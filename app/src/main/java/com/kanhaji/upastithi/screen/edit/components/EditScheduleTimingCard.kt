@@ -29,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kanhaji.upastithi.data.TimeTableManager
-import com.kanhaji.upastithi.entity.ScheduleEvent
+import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
 
 @Composable
 fun EditScheduleTimingCard(

@@ -1,4 +1,4 @@
-package com.kanhaji.upastithi.screen.home.components
+package com.kanhaji.upastithi.features.home.ui.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button

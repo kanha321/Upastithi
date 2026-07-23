@@ -1,4 +1,4 @@
-package com.kanhaji.upastithi.entity
+package com.kanhaji.upastithi.features.home.domain.model
 
 import kotlinx.serialization.Serializable
 

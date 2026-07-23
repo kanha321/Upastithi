@@ -1,10 +1,10 @@
 package com.kanhaji.upastithi.data
 
 import android.util.Log
-import com.kanhaji.upastithi.entity.CourseInfo
-import com.kanhaji.upastithi.entity.DetectedTimetable
-import com.kanhaji.upastithi.entity.ScheduleEvent
-import com.kanhaji.upastithi.entity.TimetableData
+import com.kanhaji.upastithi.features.home.domain.model.CourseInfo
+import com.kanhaji.upastithi.features.home.domain.model.DetectedTimetable
+import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
+import com.kanhaji.upastithi.features.home.domain.model.TimetableData
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition

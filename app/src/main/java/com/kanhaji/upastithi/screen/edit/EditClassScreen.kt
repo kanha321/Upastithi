@@ -2,7 +2,7 @@ package com.kanhaji.upastithi.screen.edit
 
 import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.core.screen.Screen
-import com.kanhaji.upastithi.entity.ScheduleEvent
+import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
 
 data class EditClassScreen(
     val event: ScheduleEvent? = null,
