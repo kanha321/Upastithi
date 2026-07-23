@@ -1,0 +1,59 @@
+package com.kanhaji.upastithi.features.home.ui.components
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
+import kotlinx.datetime.DayOfWeek
+
+@Composable
+fun ClassCardSingle(
+    classEntity: ClassEntity
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+    ) {
+        Text(
+            text = classEntity.subject.displayName,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.height(12.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = if (classEntity.dayOfWeek == DayOfWeek.WEDNESDAY && classEntity.time == "11:00 - 12:00") "13:00 - 14:00" else classEntity.time,
+                textAlign = TextAlign.Start,
+            )
+            Text(
+                text = classEntity.roomNo,
+                fontSize = 16.sp,
+                textAlign = TextAlign.End,
+            )
+        }
+    }
+}

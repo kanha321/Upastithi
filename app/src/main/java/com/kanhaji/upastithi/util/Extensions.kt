@@ -1,7 +1,7 @@
 package com.kanhaji.upastithi.util
 
-import com.kanhaji.upastithi.data.TimeTable
-import com.kanhaji.upastithi.entity.ClassEntity
+import com.kanhaji.upastithi.features.home.data.TimeTable
+import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
 import kotlinx.datetime.DayOfWeek
 
 fun DayOfWeek.getClasses(): List<ClassEntity> {

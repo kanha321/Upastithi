@@ -9,7 +9,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import com.kanhaji.basics.datastore.PrefsManager
 import com.kanhaji.basics.theme.BasicKolorTheme
-import com.kanhaji.upastithi.screen.splash.SplashScreen
+import com.kanhaji.upastithi.features.splash.ui.SplashScreen
 import com.kanhaji.upastithi.util.UpasthitiUtils
 
 class MainActivity : ComponentActivity() {
