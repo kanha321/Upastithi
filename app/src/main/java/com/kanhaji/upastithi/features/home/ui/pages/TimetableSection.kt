@@ -94,8 +94,8 @@ fun TimetableSection(
     var showSelectDialog by remember { mutableStateOf(false) }
     var temporarySelectedPageIndex by remember { mutableStateOf<Int?>(null) }
 
-    var timetableData by remember { mutableStateOf<TimetableData?>(null) }
-    var originalPdfData by remember { mutableStateOf<TimetableData?>(null) }
+    var timetableData by remember { mutableStateOf<TimetableData?>(TimeTableManager.activeTimetableData) }
+    var originalPdfData by remember { mutableStateOf<TimetableData?>(TimeTableManager.activeTimetableData) }
 
     var showWarningDialog by remember { mutableStateOf(false) }
     var pendingFileBytes by remember { mutableStateOf<ByteArray?>(null) }
@@ -160,7 +160,7 @@ fun TimetableSection(
     val pagerState = rememberPagerState(initialPage = initialDayIndex, pageCount = { daysList.size })
 
     LaunchedEffect(timetableData) {
-        if (!TimeTableManager.isCustomized) {
+        if (timetableData != null && !TimeTableManager.isCustomized) {
             TimeTableManager.setParsedTimetable(timetableData)
         }
     }

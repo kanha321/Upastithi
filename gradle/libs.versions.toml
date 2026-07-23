@@ -15,7 +15,7 @@ materialKolor = "3.0.0"
 colorpickerCompose = "1.1.2"
 materialIcons = "1.7.3"
 datastore = "1.1.7"
-material3 = "1.4.0-alpha18"
+material3 = "1.4.0"
 ktor = "3.2.3"
 
 #customs
