@@ -34,8 +34,9 @@ fun YourAppTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = rememberDynamicColorScheme(
-        seedColor = MaterialTheme.colorScheme.primary,
-        isDark = darkTheme
+        primary = MaterialTheme.colorScheme.primary,
+        isDark = darkTheme,
+        isAmoled = false
     )
     SystemAppearance(useDarkIcons = !darkTheme)
 

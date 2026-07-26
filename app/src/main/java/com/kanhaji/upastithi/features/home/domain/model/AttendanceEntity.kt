@@ -8,6 +8,7 @@ import java.util.UUID
 
 data class AttendanceEntity(
     val attendanceId: UUID = UUID.randomUUID(),
+    val timetableId: String = "",
     val date: LocalDate,
     val time: String,
     val subject: Subject,
@@ -17,6 +18,7 @@ data class AttendanceEntity(
 @Serializable
 data class AttendanceEntitySerialized(
     val attendanceId: String = UUID.randomUUID().toString(),
+    val timetableId: String = "",
     val date: String,
     val time: String,
     val subject: Subject,
@@ -26,6 +28,7 @@ data class AttendanceEntitySerialized(
 fun AttendanceEntity.toSerialized(): AttendanceEntitySerialized {
     return AttendanceEntitySerialized(
         attendanceId = attendanceId.toString(),
+        timetableId = timetableId,
         date = date.toString(),
         time = time,
         subject = subject,
@@ -35,6 +38,7 @@ fun AttendanceEntity.toSerialized(): AttendanceEntitySerialized {
 
 fun AttendanceEntitySerialized.toEntity(): AttendanceEntity {
     return AttendanceEntity(
+        timetableId = timetableId,
         date = LocalDate.parse(date),
         time = time,
         subject = subject,
