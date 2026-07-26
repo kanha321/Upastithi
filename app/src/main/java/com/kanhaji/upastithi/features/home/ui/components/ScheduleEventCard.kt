@@ -27,33 +27,27 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kanhaji.upastithi.features.home.domain.model.CourseInfo
 import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
+import androidx.compose.ui.graphics.Color
+import com.kanhaji.upastithi.features.home.data.AttendanceStatus
 
 @Composable
 fun ScheduleEventCard(
     event: ScheduleEvent,
     courseInfo: CourseInfo?,
+    attendanceStatus: AttendanceStatus? = null,
     onEditClick: ((ScheduleEvent) -> Unit)? = null
 ) {
     val isLab = event.type.equals("P", ignoreCase = true) || event.type.equals("Practical", ignoreCase = true)
     val fullCourseName = courseInfo?.name?.ifEmpty { null } ?: event.course_code
+    val borderColor = attendanceStatus?.color ?: if (isLab) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outlineVariant
+    val containerColor = attendanceStatus?.color?.copy(alpha = 0.12f) ?: if (isLab) MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceContainerLow
 
     OutlinedCard(
         onClick = { onEditClick?.invoke(event) },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = if (isLab) 
-                MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.25f)
-            else 
-                MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = if (isLab) 
-                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
-            else 
-                MaterialTheme.colorScheme.outlineVariant
-        )
+        colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
+        border = BorderStroke(width = if (attendanceStatus != null) 2.dp else 1.dp, color = borderColor)
     ) {
         Column(
             modifier = Modifier
@@ -84,17 +78,33 @@ fun ScheduleEventCard(
                     )
                 }
 
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = if (isLab) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.secondaryContainer
-                ) {
-                    Text(
-                        text = if (isLab) "Practical" else "Lecture",
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (isLab) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontWeight = FontWeight.Bold
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    attendanceStatus?.let { status ->
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = status.color
+                        ) {
+                            Text(
+                                text = status.displayName,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isLab) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Text(
+                            text = if (isLab) "Practical" else "Lecture",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (isLab) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSecondaryContainer,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 

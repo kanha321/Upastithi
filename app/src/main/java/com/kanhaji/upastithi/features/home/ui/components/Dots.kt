@@ -19,6 +19,8 @@ import com.kanhaji.upastithi.features.home.domain.model.AttendanceEntity
 import com.kanhaji.upastithi.util.getClasses
 import kotlinx.datetime.LocalDate
 
+import com.kanhaji.upastithi.data.TimeTableManager
+
 /** Fixed dot diameter — identical across every calendar cell. */
 private val DOT_SIZE = 6.5.dp
 private val DOT_SPACING = 2.dp
@@ -35,7 +37,7 @@ fun MultiDotIndicator(
     date: LocalDate,
     allAttendances: List<AttendanceEntity>
 ) {
-    val scheduledClasses = date.dayOfWeek.getClasses()
+    val scheduledClasses = TimeTableManager.getClasses(date.dayOfWeek)
 
     fun parseStartMinutes(timeRange: String): Int {
         val start = timeRange.substringBefore(" - ")

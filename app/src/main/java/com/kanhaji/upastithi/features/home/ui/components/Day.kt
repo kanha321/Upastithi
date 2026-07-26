@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
 import com.kanhaji.upastithi.features.home.ui.HomeScreenModel
 import com.kanhaji.upastithi.util.getClasses
 import com.kizitonwose.calendar.core.CalendarDay
@@ -175,13 +176,22 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
         }
     }
 
-    if (showDateDialog && selectedDate != null && selectedDayOfWeek != null) {
+    var dialogClasses by remember(selectedDate) { mutableStateOf<List<ClassEntity>?>(null) }
+
+    androidx.compose.runtime.LaunchedEffect(showDateDialog, selectedDate) {
+        if (showDateDialog && selectedDate != null) {
+            dialogClasses = screenModel.getClassesForDateUseCase(selectedDate!!)
+        }
+    }
+
+    if (showDateDialog && selectedDate != null && dialogClasses != null) {
         ClassAttendanceStepperDialog(
-            classes = selectedDayOfWeek!!.getClasses(),
+            classes = dialogClasses!!,
             screenModel = screenModel,
             date = selectedDate!!,
         ) {
             showDateDialog = false
+            dialogClasses = null
         }
     }
 }

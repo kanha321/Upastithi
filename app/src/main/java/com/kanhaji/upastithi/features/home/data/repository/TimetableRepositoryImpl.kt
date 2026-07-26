@@ -1,0 +1,246 @@
+package com.kanhaji.upastithi.features.home.data.repository
+
+import android.content.Context
+import com.kanhaji.upastithi.AndroidContext
+import com.kanhaji.upastithi.data.TimeTableManager
+import com.kanhaji.upastithi.features.home.data.Subject
+import com.kanhaji.upastithi.features.home.data.local.UpasthitiDatabase
+import com.kanhaji.upastithi.features.home.data.local.entity.ScheduleEventEntity
+import com.kanhaji.upastithi.features.home.data.local.entity.SubjectEntity
+import com.kanhaji.upastithi.features.home.data.local.entity.TimetableMetadataEntity
+import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
+import com.kanhaji.upastithi.features.home.domain.model.CourseInfo
+import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
+import com.kanhaji.upastithi.features.home.domain.model.TimetableData
+import com.kanhaji.upastithi.features.home.domain.repository.TimetableRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.DayOfWeek
+
+class TimetableRepositoryImpl(
+    private val context: Context = AndroidContext.appContext
+) : TimetableRepository {
+
+    private val db = UpasthitiDatabase.getInstance(context)
+    private val metadataDao = db.timetableMetadataDao()
+    private val eventDao = db.scheduleEventDao()
+    private val subjectDao = db.subjectDao()
+
+    override fun getActiveTimetable(): Flow<TimetableMetadataEntity?> {
+        return metadataDao.getActiveTimetable()
+    }
+
+    override fun getClassesForDay(dayOfWeek: DayOfWeek): Flow<List<ClassEntity>> {
+        val dayName = dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+        return getActiveTimetable().flatMapLatest { meta ->
+            val activeId = meta?.id ?: TimeTableManager.getTimetableId()
+            eventDao.getEventsForDay(activeId, dayName).map { eventEntities ->
+                if (eventEntities.isNotEmpty()) {
+                    eventEntities.map { it.toClassEntity(dayOfWeek) }
+                } else {
+                    TimeTableManager.getClasses(dayOfWeek)
+                }
+            }
+        }
+    }
+
+    override suspend fun getClassesForDayDirect(dayOfWeek: DayOfWeek): List<ClassEntity> = withContext(Dispatchers.IO) {
+        val activeMeta = metadataDao.getActiveTimetableDirect()
+        val activeId = activeMeta?.id ?: TimeTableManager.getTimetableId()
+        val dayName = dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+        val eventEntities = eventDao.getEventsForDayDirect(activeId, dayName)
+        if (eventEntities.isNotEmpty()) {
+            eventEntities.map { it.toClassEntity(dayOfWeek) }
+        } else {
+            TimeTableManager.getClasses(dayOfWeek)
+        }
+    }
+
+    override fun getSubjects(): Flow<List<Subject>> {
+        return getActiveTimetable().flatMapLatest { meta ->
+            val activeId = meta?.id ?: TimeTableManager.getTimetableId()
+            subjectDao.getAllSubjects(activeId).map { entities ->
+                entities.map { it.toDomainSubject() }
+            }
+        }
+    }
+
+    override suspend fun getSubjectsDirect(): List<Subject> = withContext(Dispatchers.IO) {
+        val activeMeta = metadataDao.getActiveTimetableDirect()
+        val activeId = activeMeta?.id ?: TimeTableManager.getTimetableId()
+        subjectDao.getAllSubjectsDirect(activeId).map { it.toDomainSubject() }
+    }
+
+    override suspend fun setParsedTimetable(data: TimetableData, name: String, pageIndex: Int) {
+        withContext(Dispatchers.IO) {
+            val timetableId = (name + pageIndex + data.semester + data.schedule.size).hashCode().toString()
+            metadataDao.deactivateAll()
+
+            val metadata = TimetableMetadataEntity(
+                id = timetableId,
+                name = name,
+                pageIndex = pageIndex,
+                semester = data.semester,
+                isCustomized = false,
+                isActive = true
+            )
+            metadataDao.insertOrUpdate(metadata)
+
+            val eventEntities = data.schedule.map { event ->
+                val startMins = parseTimeToMinutes(event.time.substringBefore(" - "))
+                val endMins = parseTimeToMinutes(event.time.substringAfter(" - "))
+                ScheduleEventEntity(
+                    id = event.id,
+                    timetableId = timetableId,
+                    dayOfWeek = event.day,
+                    time = event.time,
+                    startTime = event.start_time,
+                    endTime = event.end_time,
+                    startMinutes = startMins,
+                    endMinutes = endMins,
+                    courseCode = event.course_code,
+                    type = event.type,
+                    location = event.location,
+                    group = event.group,
+                    facultyAbbr = event.faculty_abbr,
+                    facultyName = event.faculty_name
+                )
+            }
+            eventDao.deleteByTimetableId(timetableId)
+            eventDao.insertAll(eventEntities)
+
+            // Register subjects into Room DB
+            val uniqueCodes = data.schedule.map { it.course_code }.distinct()
+            val subjectEntities = uniqueCodes.mapNotNull { code ->
+                val courseInfo = data.courses.find { it.code.equals(code, ignoreCase = true) }
+                val displayName = courseInfo?.name?.ifEmpty { null } ?: code
+                val isPractical = data.schedule.filter { it.course_code.equals(code, ignoreCase = true) }
+                    .any { it.type.equals("Practical", ignoreCase = true) || it.type.equals("P", ignoreCase = true) }
+
+                val finalName = if (isPractical && !displayName.startsWith("(Lab)")) "(Lab) $displayName" else displayName
+                val facultyName = data.schedule.firstOrNull { it.course_code.equals(code, ignoreCase = true) }?.faculty_name ?: ""
+                val facultyAbbr = data.schedule.firstOrNull { it.course_code.equals(code, ignoreCase = true) }?.faculty_abbr ?: ""
+
+                SubjectEntity(
+                    subjectId = code,
+                    displayName = finalName,
+                    teacher = facultyName,
+                    teacherInitials = facultyAbbr,
+                    timetableId = timetableId
+                )
+            }
+            subjectDao.deleteByTimetableId(timetableId)
+            subjectDao.insertAll(subjectEntities)
+
+            // Sync with TimeTableManager
+            TimeTableManager.setParsedTimetable(data, context)
+        }
+    }
+
+    override suspend fun saveCustomEvent(event: ScheduleEvent, courseName: String?) {
+        withContext(Dispatchers.IO) {
+            val activeMeta = metadataDao.getActiveTimetableDirect()
+            val timetableId = activeMeta?.id ?: TimeTableManager.getTimetableId()
+
+            val startMins = parseTimeToMinutes(event.time.substringBefore(" - "))
+            val endMins = parseTimeToMinutes(event.time.substringAfter(" - "))
+
+            val entity = ScheduleEventEntity(
+                id = event.id,
+                timetableId = timetableId,
+                dayOfWeek = event.day,
+                time = event.time,
+                startTime = event.start_time,
+                endTime = event.end_time,
+                startMinutes = startMins,
+                endMinutes = endMins,
+                courseCode = event.course_code,
+                type = event.type,
+                location = event.location,
+                group = event.group,
+                facultyAbbr = event.faculty_abbr,
+                facultyName = event.faculty_name
+            )
+            eventDao.insertOrUpdate(entity)
+            TimeTableManager.addEvent(event, courseName, context)
+        }
+    }
+
+    override suspend fun updateCustomEvent(
+        originalEvent: ScheduleEvent,
+        updatedEvent: ScheduleEvent,
+        courseName: String?
+    ) {
+        withContext(Dispatchers.IO) {
+            saveCustomEvent(updatedEvent, courseName)
+            TimeTableManager.updateEvent(originalEvent, updatedEvent, courseName, context)
+        }
+    }
+
+    override suspend fun deleteCustomEvent(event: ScheduleEvent) {
+        withContext(Dispatchers.IO) {
+            eventDao.deleteById(event.id)
+            TimeTableManager.deleteEvent(event, context)
+        }
+    }
+
+    override suspend fun resetToOriginalPdf(originalData: TimetableData?) {
+        withContext(Dispatchers.IO) {
+            TimeTableManager.resetToOriginalPdf(context, originalData)
+            if (originalData != null) {
+                setParsedTimetable(originalData, "Original.pdf", 0)
+            }
+        }
+    }
+
+    override fun findCollidingEvent(
+        day: String,
+        startTimeStr: String,
+        endTimeStr: String,
+        excludeEventId: String?
+    ): ScheduleEvent? {
+        return TimeTableManager.findCollidingEvent(day, startTimeStr, endTimeStr, excludeEventId)
+    }
+
+    override fun getCourseName(courseCode: String): String {
+        return TimeTableManager.getCourseName(courseCode)
+    }
+
+    private fun parseTimeToMinutes(timeStr: String): Int {
+        val clean = timeStr.trim().take(5)
+        val parts = clean.split(":").mapNotNull { it.toIntOrNull() }
+        if (parts.size >= 2) {
+            return parts[0] * 60 + parts[1]
+        }
+        return 0
+    }
+}
+
+fun ScheduleEventEntity.toClassEntity(dayOfWeek: DayOfWeek): ClassEntity {
+    val subject = Subject(
+        displayName = courseCode,
+        subjectId = courseCode,
+        teacher = facultyName ?: "",
+        teacherInitials = facultyAbbr ?: ""
+    )
+    return ClassEntity(
+        subject = subject,
+        time = time,
+        dayOfWeek = dayOfWeek,
+        roomNo = location ?: "N/A",
+        attendanceStatus = null
+    )
+}
+
+fun SubjectEntity.toDomainSubject(): Subject {
+    return Subject(
+        displayName = displayName,
+        subjectId = subjectId,
+        teacher = teacher,
+        teacherInitials = teacherInitials
+    )
+}

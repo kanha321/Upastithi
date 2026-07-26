@@ -22,6 +22,9 @@ ktor = "3.2.3"
 calendar = "2.8.0"
 kotlinxDatetime = "1.4.0"
 kotlinxSerializationJson = "1.9.0"
+room = "2.6.1"
+ksp = "2.0.21-1.0.27"
+pdfboxAndroid = "2.0.27.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -78,11 +81,17 @@ ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 
 compose-calendar = { group = "com.kizitonwose.calendar", name = "compose", version.ref = "calendar" }
 
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+pdfbox-android = { group = "com.tom-roush", name = "pdfbox-android", version.ref = "pdfboxAndroid" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 [bundles]
 datastore = [
