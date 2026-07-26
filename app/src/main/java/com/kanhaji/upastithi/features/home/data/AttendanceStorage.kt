@@ -6,6 +6,7 @@ import com.kanhaji.upastithi.features.home.domain.model.AttendanceEntity
 import com.kanhaji.upastithi.features.home.domain.model.AttendanceEntitySerialized
 import com.kanhaji.upastithi.features.home.domain.model.toEntity
 import com.kanhaji.upastithi.features.home.domain.model.toSerialized
+import com.kanhaji.upastithi.data.TimeTableManager
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -25,8 +26,16 @@ object AttendanceStorage {
     fun addAttendance(context: Context, attendance: AttendanceEntity) {
         initializeAttendanceFile(context)
         val currentList = loadAttendanceList(context).toMutableList()
-        val existingIndex =
-            currentList.indexOfFirst { it.date == attendance.date && it.time == attendance.time }
+        val activeId = TimeTableManager.getTimetableId()
+        val targetTimetableId = attendance.timetableId.ifEmpty { activeId }
+        val finalAttendance = if (attendance.timetableId.isEmpty()) attendance.copy(timetableId = activeId) else attendance
+
+        val existingIndex = currentList.indexOfFirst {
+            (it.timetableId == targetTimetableId || (it.timetableId.isEmpty() && targetTimetableId == "default")) &&
+            it.date == attendance.date &&
+            it.subject.subjectId == attendance.subject.subjectId &&
+            it.time == attendance.time
+        }
 
         if (attendance.attendanceStatus == null) {
             if (existingIndex != -1) {
@@ -37,9 +46,9 @@ object AttendanceStorage {
         }
 
         if (existingIndex == -1) {
-            currentList.add(attendance)
+            currentList.add(finalAttendance)
         } else {
-            currentList[existingIndex] = attendance
+            currentList[existingIndex] = finalAttendance
         }
         saveAttendanceList(context, currentList)
     }
@@ -78,8 +87,11 @@ object AttendanceStorage {
         date: LocalDate,
         context: Context = AndroidContext.appContext
     ): List<AttendanceEntity> {
+        val currentTimetableId = TimeTableManager.getTimetableId()
         val allAttendance = loadAttendanceList(context)
-        return allAttendance.filter { it.date == date }
+        return allAttendance.filter {
+            it.date == date && (it.timetableId == currentTimetableId || (it.timetableId.isEmpty() && currentTimetableId == "default"))
+        }
     }
 
     fun getAttendanceForTime(date: LocalDate, time: String): AttendanceEntity? {
@@ -91,11 +103,18 @@ object AttendanceStorage {
         subject: Subject,
         context: Context = AndroidContext.appContext
     ): List<AttendanceEntity> {
+        val currentTimetableId = TimeTableManager.getTimetableId()
         val allAttendance = loadAttendanceList(context)
-        return allAttendance.filter { it.subject == subject }
+        return allAttendance.filter {
+            it.subject.subjectId == subject.subjectId &&
+            (it.timetableId == currentTimetableId || (it.timetableId.isEmpty() && currentTimetableId == "default"))
+        }
     }
 
     fun getAttendanceGroupedByDate(context: Context): Map<LocalDate, List<AttendanceEntity>> {
-        return loadAttendanceList(context).groupBy { it.date }
+        val currentTimetableId = TimeTableManager.getTimetableId()
+        return loadAttendanceList(context)
+            .filter { it.timetableId == currentTimetableId || (it.timetableId.isEmpty() && currentTimetableId == "default") }
+            .groupBy { it.date }
     }
 }

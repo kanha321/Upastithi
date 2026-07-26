@@ -2,6 +2,33 @@
 
 ---
 
+## [3.0.0] - 07:35 PM / 23 July 2026
+
+### Universal Timetable Engine & Architecture Overhaul
+
+- **Universal Dynamic Timetable Parser**:
+  - Replaced hardcoded timetables and static subjects with a 100% dynamic, on-device PDF grid timetable parser supporting B.Tech, MCA, MBA, M.Tech, and all academic branches.
+  - Automatically extracts courses, section schedules, locations, and faculty metadata directly from uploaded PDFs.
+
+- **Material 3 Expressive UI & Custom Controls**:
+  - Upgraded Compose Material 3 library to stable `1.4.0` with Material 3 Expressive APIs.
+  - Integrated interactive 2-step **M3 Clock Dial (`TimePicker`)** that automatically transitions from Start Time selection to End Time.
+  - Built custom `KTextField` with smooth focus animations, pill-shaped containers, and read-only support matching the app theme.
+  - Added interactive Material 3 Surface Timing Cards with quick-change assist chips.
+
+- **Real-Time Time Slot Collision Prevention**:
+  - Implemented real-time interval intersection detection ($\max(S_1, S_2) < \min(E_1, E_2)$) when adding or editing classes.
+  - Added a dynamic **Conflict Alert Banner** displaying the full conflicting subject name and time slot.
+  - Automatically disables saving whenever a time conflict is active.
+
+- **Architecture & Motion Enhancements**:
+  - Refactored project codebase into Clean Architecture feature packages (`features/home/ui/`, `features/home/domain/model/`, `features/home/data/`).
+  - Integrated KernelSU-inspired spring tab transition animations and RankPredictorAdmin-inspired `FloatingSpringBottomBar`.
+  - Added an interactive Material 3 Empty State card in the Attendance section when no timetable is loaded.
+  - Fixed pre-composition state guards in `HorizontalPager` to eliminate flash/glitch during swipe transitions between Attendance and Timetable pages.
+
+---
+
 ## [2.5.0] - 03:10 AM / 13 January 2026
 
 ### Academic Updates

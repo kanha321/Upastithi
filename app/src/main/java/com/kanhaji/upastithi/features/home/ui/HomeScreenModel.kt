@@ -35,6 +35,11 @@ class HomeScreenModel(
     var isUpdateAvailable by mutableStateOf(false)
 
     init {
+        refreshAttendance()
+    }
+
+    fun refreshAttendance() {
+        attendanceByDate.clear()
         val initial = AttendanceStorage.getAttendanceGroupedByDate(AndroidContext.appContext)
         attendanceByDate.putAll(initial)
     }

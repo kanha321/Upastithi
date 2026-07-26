@@ -4,8 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +18,11 @@ import androidx.compose.ui.unit.dp
 import com.kanhaji.upastithi.features.home.domain.model.AttendanceEntity
 import com.kanhaji.upastithi.util.getClasses
 import kotlinx.datetime.LocalDate
+
+/** Fixed dot diameter — identical across every calendar cell. */
+private val DOT_SIZE = 6.5.dp
+private val DOT_SPACING = 2.dp
+private val ROW_SPACING = 1.5.dp
 
 private data class DotSpec(
     val color: Color,
@@ -61,26 +66,47 @@ fun MultiDotIndicator(
             }
         }
 
-    if (dots.isNotEmpty()) {
-        Row(
-            modifier = Modifier.padding(horizontal = 2.dp),
-            horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically
+    if (dots.isEmpty()) return
+
+    if (dots.size <= 4) {
+        // Single row for 1–4 dots
+        DotRow(dots)
+    } else {
+        // Dual row for 5–8 dots
+        // Split: top row gets ceil(n/2), bottom row gets the rest
+        val topCount = (dots.size + 1) / 2 // ceil division
+        val topRow = dots.take(topCount)
+        val bottomRow = dots.drop(topCount)
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(ROW_SPACING)
         ) {
-            dots.forEach { spec ->
-                Box(
-                    modifier = Modifier
-                        .size(6.5.dp) // Perfect sweet spot fixed size for all dots across all cells
-                        .clip(CircleShape)
-                        .then(
-                            if (spec.outlined) {
-                                Modifier.border(1.dp, spec.color, CircleShape)
-                            } else {
-                                Modifier.background(spec.color)
-                            }
-                        )
-                )
-            }
+            DotRow(topRow)
+            DotRow(bottomRow)
+        }
+    }
+}
+
+@Composable
+private fun DotRow(specs: List<DotSpec>) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(DOT_SPACING, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        specs.forEach { spec ->
+            Box(
+                modifier = Modifier
+                    .size(DOT_SIZE)
+                    .clip(CircleShape)
+                    .then(
+                        if (spec.outlined) {
+                            Modifier.border(1.dp, spec.color, CircleShape)
+                        } else {
+                            Modifier.background(spec.color)
+                        }
+                    )
+            )
         }
     }
 }

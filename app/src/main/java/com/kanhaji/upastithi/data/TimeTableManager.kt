@@ -29,6 +29,13 @@ object TimeTableManager {
         encodeDefaults = true
     }
 
+    fun getTimetableId(): String {
+        val data = activeTimetableData ?: return "default"
+        val scheduleStr = data.schedule.joinToString("|") { "${it.day}_${it.time}_${it.course_code}" }
+        val coursesStr = data.courses.joinToString("|") { "${it.code}_${it.name}" }
+        return (scheduleStr + coursesStr).hashCode().toString()
+    }
+
     fun setParsedTimetable(data: TimetableData?, context: Context? = null) {
         if (context != null && loadCustomTimetable(context)) {
             return
@@ -51,7 +58,7 @@ object TimeTableManager {
         val current = activeTimetableData ?: return
         val newSchedule = current.schedule.map { event ->
             if (event.id == originalEvent.id) updatedEvent else event
-        }
+        }.sortedWith(compareBy({ it.day }, { parseTimeToMinutes(it.time.substringBefore(" - ")) }))
 
         val updatedCourses = updateCourseInfoList(current.courses, updatedEvent.course_code, updatedCourseName)
         val updatedData = current.copy(
@@ -71,7 +78,8 @@ object TimeTableManager {
         context: Context
     ) {
         val current = activeTimetableData ?: return
-        val newSchedule = current.schedule + newEvent
+        val newSchedule = (current.schedule + newEvent)
+            .sortedWith(compareBy({ it.day }, { parseTimeToMinutes(it.time.substringBefore(" - ")) }))
         val updatedCourses = updateCourseInfoList(current.courses, newEvent.course_code, courseName)
 
         val updatedData = current.copy(
@@ -232,7 +240,9 @@ object TimeTableManager {
     fun getClasses(dayOfWeek: DayOfWeek): List<ClassEntity> {
         val data = activeTimetableData ?: return getDefaultClasses(dayOfWeek)
         val dayName = dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
-        val dayEvents = data.schedule.filter { it.day.equals(dayName, ignoreCase = true) }
+        val dayEvents = data.schedule
+            .filter { it.day.equals(dayName, ignoreCase = true) }
+            .sortedBy { parseTimeToMinutes(it.time.substringBefore(" - ")) }
 
         if (dayEvents.isEmpty()) return emptyList()
 
