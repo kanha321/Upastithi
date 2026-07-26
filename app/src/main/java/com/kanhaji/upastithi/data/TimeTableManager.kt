@@ -37,9 +37,6 @@ object TimeTableManager {
     }
 
     fun setParsedTimetable(data: TimetableData?, context: Context? = null) {
-        if (context != null && loadCustomTimetable(context)) {
-            return
-        }
         activeTimetableData = data
         isCustomized = false
         if (data != null) {
@@ -69,7 +66,6 @@ object TimeTableManager {
         activeTimetableData = updatedData
         isCustomized = true
         registerDynamicSubjects(updatedData)
-        saveCustomTimetable(context, updatedData)
     }
 
     fun addEvent(
@@ -90,7 +86,6 @@ object TimeTableManager {
         activeTimetableData = updatedData
         isCustomized = true
         registerDynamicSubjects(updatedData)
-        saveCustomTimetable(context, updatedData)
     }
 
     fun deleteEvent(
@@ -104,7 +99,6 @@ object TimeTableManager {
         activeTimetableData = updatedData
         isCustomized = true
         registerDynamicSubjects(updatedData)
-        saveCustomTimetable(context, updatedData)
     }
 
     fun resetToOriginalPdf(context: Context, originalPdfData: TimetableData?) {
@@ -179,33 +173,7 @@ object TimeTableManager {
         }
     }
 
-    fun saveCustomTimetable(context: Context, customData: TimetableData? = null) {
-        val data = customData ?: activeTimetableData ?: return
-        try {
-            val file = File(context.filesDir, "custom_edited_timetable.json")
-            val jsonStr = json.encodeToString(data)
-            file.writeText(jsonStr)
-        } catch (e: Exception) {
-            Log.e("TimeTableManager", "Failed to save custom timetable: ${e.message}")
-        }
-    }
 
-    fun loadCustomTimetable(context: Context): Boolean {
-        try {
-            val file = File(context.filesDir, "custom_edited_timetable.json")
-            if (file.exists()) {
-                val jsonStr = file.readText()
-                val data = json.decodeFromString<TimetableData>(jsonStr)
-                activeTimetableData = data
-                isCustomized = true
-                registerDynamicSubjects(data)
-                return true
-            }
-        } catch (e: Exception) {
-            Log.e("TimeTableManager", "Failed to load custom timetable: ${e.message}")
-        }
-        return false
-    }
 
     private fun registerDynamicSubjects(data: TimetableData) {
         val uniqueCodes = data.schedule.map { it.course_code }.distinct()

@@ -3,7 +3,6 @@ package com.kanhaji.upastithi.features.home.data
 import android.content.Context
 import com.kanhaji.upastithi.AndroidContext
 import com.kanhaji.upastithi.data.TimeTableManager
-import com.kanhaji.upastithi.features.home.data.local.AttendanceLegacyMigrator
 import com.kanhaji.upastithi.features.home.data.local.UpasthitiDatabase
 import com.kanhaji.upastithi.features.home.data.local.dao.AttendanceDao
 import com.kanhaji.upastithi.features.home.data.local.entity.AttendanceRoomEntity
@@ -20,13 +19,7 @@ import java.util.UUID
 object AttendanceStorage {
 
     private fun getDao(context: Context = AndroidContext.appContext): AttendanceDao {
-        val db = UpasthitiDatabase.getInstance(context)
-        val dao = db.attendanceDao()
-        // Trigger legacy migration on background I/O
-        CoroutineScope(Dispatchers.IO).launch {
-            AttendanceLegacyMigrator.migrateLegacyJsonIfNeeded(context, dao)
-        }
-        return dao
+        return UpasthitiDatabase.getInstance(context).attendanceDao()
     }
 
     fun getAttendanceFlow(context: Context = AndroidContext.appContext): Flow<Map<LocalDate, List<AttendanceEntity>>> {
@@ -88,7 +81,6 @@ object AttendanceStorage {
     fun getAttendanceGroupedByDate(context: Context = AndroidContext.appContext): Map<LocalDate, List<AttendanceEntity>> {
         val timetableId = TimeTableManager.getTimetableId()
         return runBlocking(Dispatchers.IO) {
-            getDao(context).getAttendancesForDateDirect(timetableId, "") // fallback or direct
             val all = getDao(context).getAllAttendancesDirect()
                 .filter { it.timetableId == timetableId || (it.timetableId.isEmpty() && timetableId == "default") }
                 .map { it.toDomainEntity() }
