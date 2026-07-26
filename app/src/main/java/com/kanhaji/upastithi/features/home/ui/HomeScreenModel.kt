@@ -35,13 +35,20 @@ class HomeScreenModel(
     var isUpdateAvailable by mutableStateOf(false)
 
     init {
-        refreshAttendance()
+        screenModelScope.launch {
+            AttendanceStorage.getAttendanceFlow().collect { map ->
+                attendanceByDate.clear()
+                attendanceByDate.putAll(map)
+            }
+        }
     }
 
     fun refreshAttendance() {
-        attendanceByDate.clear()
-        val initial = AttendanceStorage.getAttendanceGroupedByDate(AndroidContext.appContext)
-        attendanceByDate.putAll(initial)
+        screenModelScope.launch {
+            val initial = AttendanceStorage.getAttendanceGroupedByDate(AndroidContext.appContext)
+            attendanceByDate.clear()
+            attendanceByDate.putAll(initial)
+        }
     }
 
     fun saveAttendance(
@@ -49,9 +56,11 @@ class HomeScreenModel(
         attendanceStatus: AttendanceStatus?,
         date: LocalDate
     ) {
-        saveAttendanceUseCase(classEntity = classEntity, attendanceStatus = attendanceStatus, date = date)
-        val updatedList = AttendanceStorage.getAttendanceForDate(date)
-        attendanceByDate[date] = updatedList
+        screenModelScope.launch {
+            saveAttendanceUseCase(classEntity = classEntity, attendanceStatus = attendanceStatus, date = date)
+            val updatedList = AttendanceStorage.getAttendanceForDate(date)
+            attendanceByDate[date] = updatedList
+        }
     }
 
     fun getAttendanceForDate(date: LocalDate): List<AttendanceEntity> {

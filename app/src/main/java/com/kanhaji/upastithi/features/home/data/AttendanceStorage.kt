@@ -2,95 +2,64 @@ package com.kanhaji.upastithi.features.home.data
 
 import android.content.Context
 import com.kanhaji.upastithi.AndroidContext
-import com.kanhaji.upastithi.features.home.domain.model.AttendanceEntity
-import com.kanhaji.upastithi.features.home.domain.model.AttendanceEntitySerialized
-import com.kanhaji.upastithi.features.home.domain.model.toEntity
-import com.kanhaji.upastithi.features.home.domain.model.toSerialized
 import com.kanhaji.upastithi.data.TimeTableManager
+import com.kanhaji.upastithi.features.home.data.local.UpasthitiDatabase
+import com.kanhaji.upastithi.features.home.data.local.dao.AttendanceDao
+import com.kanhaji.upastithi.features.home.data.local.entity.AttendanceRoomEntity
+import com.kanhaji.upastithi.features.home.domain.model.AttendanceEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
-import kotlinx.serialization.json.Json
-import java.io.File
+import java.util.UUID
 
 object AttendanceStorage {
 
-    private const val FILE_NAME = "attendance_data.json"
-    private val json = Json { prettyPrint = true }
+    private fun getDao(context: Context = AndroidContext.appContext): AttendanceDao {
+        return UpasthitiDatabase.getInstance(context).attendanceDao()
+    }
 
-    fun initializeAttendanceFile(context: Context) {
-        val file = File(context.filesDir, FILE_NAME)
-        if (!file.exists()) {
-            file.writeText("[]")
+    fun getAttendanceFlow(context: Context = AndroidContext.appContext): Flow<Map<LocalDate, List<AttendanceEntity>>> {
+        val timetableId = TimeTableManager.getTimetableId()
+        return getDao(context).getAllAttendancesForTimetable(timetableId).map { roomList ->
+            roomList.map { it.toDomainEntity() }.groupBy { it.date }
         }
     }
 
     fun addAttendance(context: Context, attendance: AttendanceEntity) {
-        initializeAttendanceFile(context)
-        val currentList = loadAttendanceList(context).toMutableList()
-        val activeId = TimeTableManager.getTimetableId()
-        val targetTimetableId = attendance.timetableId.ifEmpty { activeId }
-        val finalAttendance = if (attendance.timetableId.isEmpty()) attendance.copy(timetableId = activeId) else attendance
+        val dao = getDao(context)
+        val timetableId = attendance.timetableId.ifEmpty { TimeTableManager.getTimetableId() }
 
-        val existingIndex = currentList.indexOfFirst {
-            (it.timetableId == targetTimetableId || (it.timetableId.isEmpty() && targetTimetableId == "default")) &&
-            it.date == attendance.date &&
-            it.subject.subjectId == attendance.subject.subjectId &&
-            it.time == attendance.time
-        }
-
-        if (attendance.attendanceStatus == null) {
-            if (existingIndex != -1) {
-                currentList.removeAt(existingIndex)
-                saveAttendanceList(context, currentList)
+        CoroutineScope(Dispatchers.IO).launch {
+            if (attendance.attendanceStatus == null) {
+                dao.deleteAttendanceSlot(
+                    timetableId = timetableId,
+                    date = attendance.date.toString(),
+                    time = attendance.time,
+                    subjectId = attendance.subject.subjectId
+                )
+            } else {
+                dao.upsertAttendance(attendance.toRoomEntity(timetableId))
             }
-            return
-        }
-
-        if (existingIndex == -1) {
-            currentList.add(finalAttendance)
-        } else {
-            currentList[existingIndex] = finalAttendance
-        }
-        saveAttendanceList(context, currentList)
-    }
-
-    private fun saveAttendanceList(context: Context, attendanceList: List<AttendanceEntity>) {
-        val serializedList = attendanceList.map { it.toSerialized() }
-        val jsonString = json.encodeToString(serializedList)
-        writeToFile(context, jsonString)
-    }
-
-    fun loadAttendanceList(context: Context): List<AttendanceEntity> {
-        val file = File(context.filesDir, FILE_NAME)
-        if (!file.exists()) return emptyList()
-
-        return try {
-            val jsonString = file.readText()
-            val serializedList = json.decodeFromString<List<AttendanceEntitySerialized>>(jsonString)
-            serializedList.map { it.toEntity() }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
         }
     }
 
-    fun deleteAttendanceData(context: Context) {
-        val file = File(context.filesDir, FILE_NAME)
-        if (file.exists()) file.delete()
-    }
-
-    private fun writeToFile(context: Context, data: String) {
-        val file = File(context.filesDir, FILE_NAME)
-        file.writeText(data)
+    fun loadAttendanceList(context: Context = AndroidContext.appContext): List<AttendanceEntity> {
+        return runBlocking(Dispatchers.IO) {
+            getDao(context).getAllAttendancesDirect().map { it.toDomainEntity() }
+        }
     }
 
     fun getAttendanceForDate(
         date: LocalDate,
         context: Context = AndroidContext.appContext
     ): List<AttendanceEntity> {
-        val currentTimetableId = TimeTableManager.getTimetableId()
-        val allAttendance = loadAttendanceList(context)
-        return allAttendance.filter {
-            it.date == date && (it.timetableId == currentTimetableId || (it.timetableId.isEmpty() && currentTimetableId == "default"))
+        val timetableId = TimeTableManager.getTimetableId()
+        return runBlocking(Dispatchers.IO) {
+            getDao(context).getAttendancesForDateDirect(timetableId, date.toString()).map { it.toDomainEntity() }
         }
     }
 
@@ -103,18 +72,53 @@ object AttendanceStorage {
         subject: Subject,
         context: Context = AndroidContext.appContext
     ): List<AttendanceEntity> {
-        val currentTimetableId = TimeTableManager.getTimetableId()
-        val allAttendance = loadAttendanceList(context)
-        return allAttendance.filter {
-            it.subject.subjectId == subject.subjectId &&
-            (it.timetableId == currentTimetableId || (it.timetableId.isEmpty() && currentTimetableId == "default"))
+        val timetableId = TimeTableManager.getTimetableId()
+        return runBlocking(Dispatchers.IO) {
+            getDao(context).getAttendancesForSubjectDirect(timetableId, subject.subjectId).map { it.toDomainEntity() }
         }
     }
 
-    fun getAttendanceGroupedByDate(context: Context): Map<LocalDate, List<AttendanceEntity>> {
-        val currentTimetableId = TimeTableManager.getTimetableId()
-        return loadAttendanceList(context)
-            .filter { it.timetableId == currentTimetableId || (it.timetableId.isEmpty() && currentTimetableId == "default") }
-            .groupBy { it.date }
+    fun getAttendanceGroupedByDate(context: Context = AndroidContext.appContext): Map<LocalDate, List<AttendanceEntity>> {
+        val timetableId = TimeTableManager.getTimetableId()
+        return runBlocking(Dispatchers.IO) {
+            val all = getDao(context).getAllAttendancesDirect()
+                .filter { it.timetableId == timetableId || (it.timetableId.isEmpty() && timetableId == "default") }
+                .map { it.toDomainEntity() }
+            all.groupBy { it.date }
+        }
     }
+}
+
+fun AttendanceRoomEntity.toDomainEntity(): AttendanceEntity {
+    return AttendanceEntity(
+        attendanceId = try { UUID.fromString(id) } catch (e: Exception) { UUID.nameUUIDFromBytes(id.toByteArray()) },
+        timetableId = timetableId,
+        date = LocalDate.parse(date),
+        time = time,
+        subject = Subject(
+            displayName = subjectDisplayName,
+            subjectId = subjectId,
+            teacher = teacher,
+            teacherInitials = teacherInitials
+        ),
+        attendanceStatus = status?.let {
+            try { AttendanceStatus.valueOf(it) } catch (e: Exception) { null }
+        }
+    )
+}
+
+fun AttendanceEntity.toRoomEntity(timetableIdOverride: String? = null): AttendanceRoomEntity {
+    val finalTimetableId = timetableIdOverride ?: timetableId.ifEmpty { TimeTableManager.getTimetableId() }
+    val compositeSlotId = "${finalTimetableId}_${date}_${time}_${subject.subjectId}"
+    return AttendanceRoomEntity(
+        id = compositeSlotId,
+        timetableId = finalTimetableId,
+        date = date.toString(),
+        time = time,
+        subjectId = subject.subjectId,
+        subjectDisplayName = subject.displayName,
+        teacher = subject.teacher,
+        teacherInitials = subject.teacherInitials ?: "",
+        status = attendanceStatus?.name
+    )
 }

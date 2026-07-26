@@ -211,11 +211,7 @@ fun TimetableSection(
                     val parsed = LocalPdfParser.parseTimetablePage(bytes, savedPageIdx)
                     originalPdfData = parsed
 
-                    if (TimeTableManager.loadCustomTimetable(context)) {
-                        timetableData = TimeTableManager.activeTimetableData
-                    } else {
-                        timetableData = parsed
-                    }
+                    timetableData = parsed
                     isLoading = false
                 }
             } catch (e: Exception) {
