@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 data class Update(
     val latestVersionCode: Long,
     val latestVersionName: String,
-    val downloadMCA1: String,
-    val downloadMCA3: String,
-    val changelog: String
+    val downloadUrl: String = "",
+    val downloadMCA1: String = "",
+    val downloadMCA3: String = "",
+    val changelog: String = ""
 )

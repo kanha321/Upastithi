@@ -7,16 +7,16 @@ plugins {
 }
 
 android {
-    namespace = "com.kanhaji.upastithi"
+    namespace = "com.kanhaji.upasthiti"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.kanhaji.upastithi"
+        applicationId = "com.kanhaji.upasthiti"
         minSdk = 28
         targetSdk = 36
 
-        versionCode = 6
-        versionName = "v2.5.0"
+        versionCode = 7
+        versionName = "v3.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

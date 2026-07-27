@@ -10,8 +10,8 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.FileProvider
 import com.kanhaji.basics.entity.Update
 import com.kanhaji.basics.networking.httpClient
-import com.kanhaji.upastithi.util.Course
-import com.kanhaji.upastithi.util.UpasthitiUtils
+import com.kanhaji.upasthiti.util.Course
+import com.kanhaji.upasthiti.util.UpasthitiUtils
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
@@ -35,9 +35,17 @@ object Updater {
 
         isDownloading = true
 
-        val downloadUrl = when (course) {
-            Course.MCA1 -> update!!.downloadMCA1
-            Course.MCA3 -> update!!.downloadMCA3
+        val downloadUrl = when {
+            update!!.downloadUrl.isNotBlank() -> update!!.downloadUrl
+            course == Course.MCA3 && update!!.downloadMCA3.isNotBlank() -> update!!.downloadMCA3
+            update!!.downloadMCA1.isNotBlank() -> update!!.downloadMCA1
+            else -> update!!.downloadMCA3.ifBlank { update!!.downloadMCA1 }
+        }
+
+        if (downloadUrl.isBlank()) {
+            isDownloading = false
+            println("No valid download URL found in update payload.")
+            return
         }
 
         try {
