@@ -264,12 +264,49 @@ fun TimetableSection(
         if (uri != null) {
             val name = getFileName(context, uri)
             errorMessage = null
-            timetableData = null
 
             try {
                 val bytes = context.contentResolver.openInputStream(uri)?.readBytes()
                 if (bytes != null) {
-                    if (LocalPdfParser.isLikelyTimetable(bytes)) {
+                    val contentStr = try { String(bytes, Charsets.UTF_8).trim() } catch (_: Exception) { "" }
+
+                    if (name.endsWith(".upasthiti", ignoreCase = true) || name.endsWith(".json", ignoreCase = true) || (contentStr.startsWith("{") && contentStr.endsWith("}"))) {
+                        try {
+                            if (contentStr.contains("\"records\"") && contentStr.contains("\"exportDate\"")) {
+                                val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                                val attendanceExport = json.decodeFromString<com.kanhaji.upastithi.features.home.ui.components.AttendanceExportData>(contentStr)
+                                attendanceExport.records.forEach { record ->
+                                    val entity = com.kanhaji.upastithi.features.home.domain.model.AttendanceEntity(
+                                        timetableId = TimeTableManager.getTimetableId(),
+                                        date = kotlinx.datetime.LocalDate.parse(record.dateIso),
+                                        time = record.time,
+                                        subject = com.kanhaji.upastithi.features.home.data.Subject(
+                                            displayName = record.courseName,
+                                            subjectId = record.courseCode,
+                                            teacher = "",
+                                            teacherInitials = ""
+                                        ),
+                                        attendanceStatus = com.kanhaji.upastithi.features.home.data.AttendanceStatus.values().firstOrNull { it.name.equals(record.status, ignoreCase = true) }
+                                    )
+                                    com.kanhaji.upastithi.features.home.data.AttendanceStorage.addAttendance(context, entity)
+                                }
+                                screenModel.refreshAttendance()
+                                com.kanhaji.upastithi.util.KToast.show(context, "Successfully imported attendance data!")
+                            } else {
+                                val imported = TimeTableManager.importTimetableJson(contentStr, context)
+                                val repository = com.kanhaji.upastithi.features.home.data.repository.TimetableRepositoryImpl()
+                                coroutineScope.launch {
+                                    repository.setParsedTimetable(imported, name, 0)
+                                    timetableData = TimeTableManager.activeTimetableData ?: imported
+                                    selectedFileName = name
+                                    PrefsManager.saveString("last_pdf_name", name)
+                                    com.kanhaji.upastithi.util.KToast.show(context, "Successfully imported .upasthiti timetable!")
+                                }
+                            }
+                        } catch (ex: Exception) {
+                            errorMessage = "Failed to import .upasthiti file: ${ex.localizedMessage}"
+                        }
+                    } else if (LocalPdfParser.isLikelyTimetable(bytes)) {
                         pdfBytes = bytes
                         selectedFileName = name
                         processTimetableBytes(bytes, name)

@@ -49,13 +49,13 @@ fun TimetableUploadCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Import Timetable PDF",
+                        text = "Import Timetable",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Upload official MNNIT MCA timetable PDF to auto-detect daily classes and rooms.",
+                        text = "Select an official timetable PDF or an exported .upasthiti timetable file.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -74,7 +74,7 @@ fun TimetableUploadCard(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Select PDF")
+                Text("Select File")
             }
         }
     }

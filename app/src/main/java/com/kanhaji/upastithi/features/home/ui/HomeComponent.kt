@@ -35,6 +35,13 @@ import com.kanhaji.upastithi.util.UpasthitiUtils
 import kotlinx.coroutines.launch
 import java.io.File
 
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.kanhaji.upastithi.features.home.ui.components.ShareExportBottomSheet
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeComponent(
@@ -44,6 +51,7 @@ fun HomeComponent(
     val scope = rememberCoroutineScope()
     val navigator = LocalNavigator.currentOrThrow
     val context = androidx.compose.ui.platform.LocalContext.current
+    var showShareBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (!UpasthitiUtils.updateChecked)
@@ -79,6 +87,14 @@ fun HomeComponent(
                             contentDescription = "Settings"
                         )
                     }
+                    IconButton(onClick = {
+                        showShareBottomSheet = true
+                    }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Share,
+                            contentDescription = "Share & Export"
+                        )
+                    }
                     AnimatedVisibility(screenModel.isUpdateAvailable && Updater.downloadProgress != 1f) {
                         UpdateButton()
                     }
@@ -86,6 +102,11 @@ fun HomeComponent(
             )
         }
     ) { innerPadding ->
+        if (showShareBottomSheet) {
+            ShareExportBottomSheet(
+                onDismiss = { showShareBottomSheet = false }
+            )
+        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
