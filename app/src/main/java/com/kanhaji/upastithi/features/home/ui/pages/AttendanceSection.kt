@@ -4,49 +4,49 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kanhaji.upastithi.data.TimeTableManager
 import com.kanhaji.upastithi.features.home.data.Subject
 import com.kanhaji.upastithi.features.home.ui.HomeScreenModel
+import com.kanhaji.upastithi.features.home.ui.components.SubjectAttendanceCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AttendanceSection(
     screenModel: HomeScreenModel
 ) {
-    val refreshKey = remember { mutableIntStateOf(0) }
-    // Read activeTimetableData to trigger recomposition when PDF is loaded
     val activeTimetable = TimeTableManager.activeTimetableData
     val subjects = Subject.getAllSubjects()
+    val sortedSubjects = remember(subjects) {
+        subjects.sortedWith(
+            compareBy({
+                it.displayName.contains("(Lab)", ignoreCase = true) ||
+                it.displayName.contains("Lab", ignoreCase = true) ||
+                it.displayName.contains("Practical", ignoreCase = true)
+            }, { it.displayName })
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
         contentPadding = PaddingValues(top = 16.dp, bottom = 90.dp)
     ) {
         item {
@@ -55,17 +55,19 @@ fun AttendanceSection(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 4.dp)
             )
         }
 
-        if (subjects.isEmpty()) {
+        if (sortedSubjects.isEmpty()) {
             item {
                 Surface(
                     shape = RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.surfaceContainerLow,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
@@ -87,125 +89,28 @@ fun AttendanceSection(
                 }
             }
         } else {
-            items(subjects) { subject ->
+            items(sortedSubjects) { subject ->
+                val (attendanceText, percentage) = remember(subject) {
+                    screenModel.getAttendancesForSubject(subject)
+                }
+
+                val attendances = remember(subject) {
+                    com.kanhaji.upastithi.features.home.data.AttendanceStorage.getAttendancesForSubject(subject)
+                }
+
+                val totalCount = attendances.size
+                val attendedCount = attendances.count { 
+                    it.attendanceStatus == com.kanhaji.upastithi.features.home.data.AttendanceStatus.PRESENT || 
+                    it.attendanceStatus == com.kanhaji.upastithi.features.home.data.AttendanceStatus.PROXY
+                }
+
                 SubjectAttendanceCard(
                     subject = subject,
-                    screenModel = screenModel,
-                    refreshKey = refreshKey.intValue
+                    attendedCount = attendedCount,
+                    totalCount = totalCount,
+                    percentage = percentage.toFloat()
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun SubjectAttendanceCard(
-    subject: Subject,
-    screenModel: HomeScreenModel,
-    refreshKey: Int
-) {
-    val attendanceInfo = remember(refreshKey) {
-        screenModel.getAttendancesForSubject(subject)
-    }
-
-    val (attendanceText, percentage) = attendanceInfo
-    val attendanceColor = when {
-        percentage >= 85 -> MaterialTheme.colorScheme.primary
-        percentage >= 75 -> MaterialTheme.colorScheme.tertiary
-        else -> MaterialTheme.colorScheme.error
-    }
-
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(
-            color = MaterialTheme.colorScheme.primary,
-            width = 1.dp
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Subject Info
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = subject.displayName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Text(
-                    text = subject.subjectId,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-
-                Text(
-                    text = subject.teacher,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Attendance Info
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = "${percentage.toInt()}%",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = attendanceColor
-                )
-
-                Text(
-                    text = attendanceText,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                // Attendance Status Indicator
-                Surface(
-                    modifier = Modifier
-                        .padding(top = 4.dp),
-                    shape = MaterialTheme.shapes.small,
-                    color = attendanceColor.copy(alpha = 0.12f)
-                ) {
-                    Text(
-                        text = when {
-                            percentage >= 85 -> "Excellent"
-                            percentage >= 75 -> "Good"
-                            else -> "Low"
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = attendanceColor,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                    )
-                }
-            }
-        }
-
-        LinearProgressIndicator(
-            progress = { (percentage / 100).toFloat() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp),
-            color = attendanceColor,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        )
     }
 }
