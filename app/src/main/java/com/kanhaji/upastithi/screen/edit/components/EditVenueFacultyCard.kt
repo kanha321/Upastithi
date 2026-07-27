@@ -19,6 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kanhaji.basics.composables.KTextField
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.remember
+import com.kanhaji.upastithi.data.TimeTableManager
 
 @Composable
 fun EditVenueFacultyCard(
@@ -30,6 +35,10 @@ fun EditVenueFacultyCard(
     onGroupChanged: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val roomSuggestions = remember { TimeTableManager.getAllRooms() }
+    val facultySuggestions = remember { TimeTableManager.getAllFaculties() }
+    val groupSuggestions = remember { TimeTableManager.getAllGroups() }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -52,7 +61,16 @@ fun EditVenueFacultyCard(
                 onValueChange = onLocationChanged,
                 label = "Room / Location",
                 placeholder = "e.g. GS8, NLH2",
-                leadingIcon = Icons.Default.Place
+                leadingIcon = Icons.Default.Place,
+                suggestions = roomSuggestions,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Location",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             )
 
             KTextField(
@@ -60,7 +78,16 @@ fun EditVenueFacultyCard(
                 onValueChange = onFacultyNameChanged,
                 label = "Faculty / Instructor Name",
                 placeholder = "e.g. Dr. Himanshu Nandanwar",
-                leadingIcon = Icons.Default.Person
+                leadingIcon = Icons.Default.Person,
+                suggestions = facultySuggestions,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Faculty Name",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             )
 
             KTextField(
@@ -68,7 +95,16 @@ fun EditVenueFacultyCard(
                 onValueChange = onGroupChanged,
                 label = "Group / Batch (Optional)",
                 placeholder = "e.g. Group B, Batch 1",
-                leadingIcon = Icons.Default.Group
+                leadingIcon = Icons.Default.Group,
+                suggestions = groupSuggestions,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Group",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             )
         }
     }

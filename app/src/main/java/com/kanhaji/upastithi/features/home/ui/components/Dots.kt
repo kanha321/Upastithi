@@ -35,9 +35,12 @@ private data class DotSpec(
 @Composable
 fun MultiDotIndicator(
     date: LocalDate,
-    allAttendances: List<AttendanceEntity>
+    allAttendances: List<AttendanceEntity>,
+    isToday: Boolean = false,
+    isGrayedOut: Boolean = false,
+    isFutureDate: Boolean = false
 ) {
-    val scheduledClasses = TimeTableManager.getClasses(date.dayOfWeek)
+    val scheduledClasses = TimeTableManager.getClasses(date)
 
     fun parseStartMinutes(timeRange: String): Int {
         val start = timeRange.substringBefore(" - ")
@@ -47,6 +50,18 @@ fun MultiDotIndicator(
         return h * 60 + m
     }
 
+    val defaultDotColor = if (isToday) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    val dotAlpha = when {
+        isGrayedOut -> 0.3f
+        isFutureDate -> 0.55f
+        else -> 1.0f
+    }
+
     val dots = scheduledClasses
         .sortedBy { parseStartMinutes(it.time) }
         .map { classEntity ->
@@ -54,14 +69,18 @@ fun MultiDotIndicator(
                 it.time == classEntity.time && it.attendanceStatus != null
             }
             if (attendance != null) {
+                val rawColor = attendance.attendanceStatus!!.color
+                val finalColor = if (dotAlpha < 1.0f) rawColor.copy(alpha = dotAlpha) else rawColor
                 DotSpec(
-                    color = attendance.attendanceStatus!!.color,
+                    color = finalColor,
                     outlined = false,
                     startMinutes = parseStartMinutes(attendance.time)
                 )
             } else {
+                val rawColor = defaultDotColor
+                val finalColor = if (dotAlpha < 1.0f) rawColor.copy(alpha = dotAlpha) else rawColor
                 DotSpec(
-                    color = MaterialTheme.colorScheme.primary,
+                    color = finalColor,
                     outlined = true,
                     startMinutes = parseStartMinutes(classEntity.time)
                 )

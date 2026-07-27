@@ -32,9 +32,19 @@ data class ScheduleEvent(
 )
 
 @Serializable
+enum class TimetableSource {
+    PDF_PARSED,
+    IMPORTED,
+    CUSTOM_CREATED
+}
+
+@Serializable
 data class TimetableData(
     val semester: String,
     val faculty: Map<String, String> = emptyMap(),
     val courses: List<CourseInfo> = emptyList(),
-    val schedule: List<ScheduleEvent> = emptyList()
+    val schedule: List<ScheduleEvent> = emptyList(),
+    val source: TimetableSource = TimetableSource.PDF_PARSED,
+    val is_modified: Boolean = false,   // false = Original baseline, true = Modified by user/author
+    val modified_by_author: Boolean = false // true if imported timetable was already modified by the sharing author
 )

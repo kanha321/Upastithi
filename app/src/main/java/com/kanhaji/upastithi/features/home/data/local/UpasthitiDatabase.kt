@@ -5,10 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.kanhaji.upastithi.features.home.data.local.dao.AttendanceDao
+import com.kanhaji.upastithi.features.home.data.local.dao.ClassShiftOverrideDao
 import com.kanhaji.upastithi.features.home.data.local.dao.ScheduleEventDao
 import com.kanhaji.upastithi.features.home.data.local.dao.SubjectDao
 import com.kanhaji.upastithi.features.home.data.local.dao.TimetableMetadataDao
 import com.kanhaji.upastithi.features.home.data.local.entity.AttendanceRoomEntity
+import com.kanhaji.upastithi.features.home.data.local.entity.ClassShiftOverrideEntity
 import com.kanhaji.upastithi.features.home.data.local.entity.ScheduleEventEntity
 import com.kanhaji.upastithi.features.home.data.local.entity.SubjectEntity
 import com.kanhaji.upastithi.features.home.data.local.entity.TimetableMetadataEntity
@@ -18,9 +20,10 @@ import com.kanhaji.upastithi.features.home.data.local.entity.TimetableMetadataEn
         AttendanceRoomEntity::class,
         TimetableMetadataEntity::class,
         ScheduleEventEntity::class,
-        SubjectEntity::class
+        SubjectEntity::class,
+        ClassShiftOverrideEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class UpasthitiDatabase : RoomDatabase() {
@@ -29,6 +32,7 @@ abstract class UpasthitiDatabase : RoomDatabase() {
     abstract fun timetableMetadataDao(): TimetableMetadataDao
     abstract fun scheduleEventDao(): ScheduleEventDao
     abstract fun subjectDao(): SubjectDao
+    abstract fun classShiftOverrideDao(): ClassShiftOverrideDao
 
     companion object {
         @Volatile

@@ -14,5 +14,6 @@ data class ClassEntity(
     val subject: Subject,
     val roomNo: String,
     val attendanceStatus: AttendanceStatus?,
+    val group: String? = null,
     val startTime: Int = time.split(" - ")[0].split(":")[0].toInt(10), // Extracting start time as an Int
 )

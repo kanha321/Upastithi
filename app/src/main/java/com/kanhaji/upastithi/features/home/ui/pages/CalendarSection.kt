@@ -1,6 +1,7 @@
 package com.kanhaji.upastithi.features.home.ui.pages
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -67,9 +68,11 @@ fun CalendarSection(
             .fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+
         ElevatedCard(
             modifier = Modifier
                 .padding(horizontal = 12.dp, vertical = 8.dp)
+                .animateContentSize()
         ) {
             Column(
                 modifier = Modifier
@@ -141,6 +144,7 @@ fun CalendarSection(
                 }
 
                 HorizontalCalendar(
+                    modifier = Modifier.animateContentSize(),
                     state = state,
                     dayContent = { day ->
                         Day(day = day, screenModel = screenModel)
@@ -152,7 +156,8 @@ fun CalendarSection(
             }
         }
         InfoNoteCard(
-            text = "Tap a date to view timetable or add attendance"
+            text = "Tap a date to view timetable or add attendance",
+            modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 90.dp)
         )
     }
 }

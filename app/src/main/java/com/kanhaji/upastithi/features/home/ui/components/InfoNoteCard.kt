@@ -37,13 +37,15 @@ import kotlinx.coroutines.launch
 fun InfoNoteCard(
     text: String,
     modifier: Modifier = Modifier,
-    icon: ImageVector = Icons.Outlined.Info
+    annotatedText: androidx.compose.ui.text.AnnotatedString? = null,
+    icon: ImageVector = Icons.Outlined.Info,
+    prefKey: String = "info_guide_dismissed"
 ) {
     val scope = rememberCoroutineScope()
     var isDismissed by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        if (PrefsManager.getBoolean("info_guide_dismissed") == true) {
+    LaunchedEffect(prefKey) {
+        if (PrefsManager.getBoolean(prefKey) == true) {
             isDismissed = true
         }
     }
@@ -55,10 +57,7 @@ fun InfoNoteCard(
     ) {
         ElevatedCard(
             shape = RoundedCornerShape(20.dp),
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 90.dp)
+            modifier = modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier
@@ -73,16 +72,25 @@ fun InfoNoteCard(
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(Modifier.width(14.dp))
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f)
-                )
+                if (annotatedText != null) {
+                    Text(
+                        text = annotatedText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                } else {
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
                 IconButton(
                     onClick = {
                         scope.launch {
-                            PrefsManager.saveBoolean("info_guide_dismissed", true)
+                            PrefsManager.saveBoolean(prefKey, true)
                             isDismissed = true
                         }
                     },

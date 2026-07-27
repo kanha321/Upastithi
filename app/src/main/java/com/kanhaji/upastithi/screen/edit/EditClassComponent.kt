@@ -1,11 +1,16 @@
 package com.kanhaji.upastithi.screen.edit
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
@@ -21,6 +26,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.kanhaji.upastithi.data.TimeTableManager
 import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
+import kotlinx.coroutines.launch
 import com.kanhaji.upastithi.screen.edit.components.EditClassActionButtons
 import com.kanhaji.upastithi.screen.edit.components.EditClassTopAppBar
 import com.kanhaji.upastithi.screen.edit.components.EditCourseInfoCard
@@ -73,6 +79,8 @@ fun EditClassComponent(
         )
     }
 
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+
     val isSaveEnabled = courseCode.isNotBlank() && time.isNotBlank() && collidingEvent == null
 
     fun performSave() {
@@ -94,19 +102,25 @@ fun EditClassComponent(
                 group = group.trim().ifEmpty { null }
             )
 
-            if (isEditMode && event != null) {
-                TimeTableManager.updateEvent(event, updatedEvent, courseName.trim().ifEmpty { null }, context)
-            } else {
-                TimeTableManager.addEvent(updatedEvent, courseName.trim().ifEmpty { null }, context)
+            coroutineScope.launch {
+                val repository = com.kanhaji.upastithi.features.home.data.repository.TimetableRepositoryImpl()
+                if (isEditMode && event != null) {
+                    repository.updateCustomEvent(event, updatedEvent, courseName.trim().ifEmpty { null })
+                } else {
+                    repository.saveCustomEvent(updatedEvent, courseName.trim().ifEmpty { null })
+                }
+                navigator.pop()
             }
-            navigator.pop()
         }
     }
 
     fun performDelete() {
         if (event != null) {
-            TimeTableManager.deleteEvent(event, context)
-            navigator.pop()
+            coroutineScope.launch {
+                val repository = com.kanhaji.upastithi.features.home.data.repository.TimetableRepositoryImpl()
+                repository.deleteCustomEvent(event)
+                navigator.pop()
+            }
         }
     }
 
@@ -118,7 +132,8 @@ fun EditClassComponent(
                 onSaveClick = { performSave() },
                 isSaveEnabled = isSaveEnabled
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.ime
     ) { innerPadding ->
         Column(
             modifier = Modifier

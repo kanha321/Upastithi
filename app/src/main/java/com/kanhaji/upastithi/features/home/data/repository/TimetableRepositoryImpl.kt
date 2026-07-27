@@ -1,10 +1,12 @@
 package com.kanhaji.upastithi.features.home.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.kanhaji.upastithi.AndroidContext
 import com.kanhaji.upastithi.data.TimeTableManager
 import com.kanhaji.upastithi.features.home.data.Subject
 import com.kanhaji.upastithi.features.home.data.local.UpasthitiDatabase
+import com.kanhaji.upastithi.features.home.data.local.entity.ClassShiftOverrideEntity
 import com.kanhaji.upastithi.features.home.data.local.entity.ScheduleEventEntity
 import com.kanhaji.upastithi.features.home.data.local.entity.SubjectEntity
 import com.kanhaji.upastithi.features.home.data.local.entity.TimetableMetadataEntity
@@ -29,9 +31,14 @@ class TimetableRepositoryImpl(
     private val metadataDao = db.timetableMetadataDao()
     private val eventDao = db.scheduleEventDao()
     private val subjectDao = db.subjectDao()
+    private val shiftOverrideDao = db.classShiftOverrideDao()
 
     override fun getActiveTimetable(): Flow<TimetableMetadataEntity?> {
         return metadataDao.getActiveTimetable()
+    }
+
+    override suspend fun getActiveTimetableDirect(): TimetableMetadataEntity? = withContext(Dispatchers.IO) {
+        metadataDao.getActiveTimetableDirect()
     }
 
     override fun getClassesForDay(dayOfWeek: DayOfWeek): Flow<List<ClassEntity>> {
@@ -90,40 +97,59 @@ class TimetableRepositoryImpl(
             )
             metadataDao.insertOrUpdate(metadata)
 
-            val eventEntities = data.schedule.map { event ->
-                val startMins = parseTimeToMinutes(event.time.substringBefore(" - "))
-                val endMins = parseTimeToMinutes(event.time.substringAfter(" - "))
-                ScheduleEventEntity(
-                    id = event.id,
-                    timetableId = timetableId,
-                    dayOfWeek = event.day,
-                    time = event.time,
-                    startTime = event.start_time,
-                    endTime = event.end_time,
-                    startMinutes = startMins,
-                    endMinutes = endMins,
-                    courseCode = event.course_code,
-                    type = event.type,
-                    location = event.location,
-                    group = event.group,
-                    facultyAbbr = event.faculty_abbr,
-                    facultyName = event.faculty_name
-                )
+            val existingEvents = eventDao.getAllEventsForTimetableDirect(timetableId)
+            val finalSchedule: List<ScheduleEvent> = if (existingEvents.isNotEmpty()) {
+                existingEvents.map { entity ->
+                    ScheduleEvent(
+                        id = entity.id,
+                        day = entity.dayOfWeek,
+                        time = entity.time,
+                        start_time = entity.startTime,
+                        end_time = entity.endTime,
+                        course_code = entity.courseCode,
+                        type = entity.type,
+                        location = entity.location,
+                        group = entity.group,
+                        faculty_abbr = entity.facultyAbbr,
+                        faculty_name = entity.facultyName
+                    )
+                }
+            } else {
+                val eventEntities = data.schedule.map { event ->
+                    val startMins = parseTimeToMinutes(event.time.substringBefore(" - "))
+                    val endMins = parseTimeToMinutes(event.time.substringAfter(" - "))
+                    ScheduleEventEntity(
+                        id = event.id,
+                        timetableId = timetableId,
+                        dayOfWeek = event.day,
+                        time = event.time,
+                        startTime = event.start_time,
+                        endTime = event.end_time,
+                        startMinutes = startMins,
+                        endMinutes = endMins,
+                        courseCode = event.course_code,
+                        type = event.type,
+                        location = event.location,
+                        group = event.group,
+                        facultyAbbr = event.faculty_abbr,
+                        facultyName = event.faculty_name
+                    )
+                }
+                eventDao.insertAll(eventEntities)
+                data.schedule
             }
-            eventDao.deleteByTimetableId(timetableId)
-            eventDao.insertAll(eventEntities)
 
             // Register subjects into Room DB
-            val uniqueCodes = data.schedule.map { it.course_code }.distinct()
+            val uniqueCodes = finalSchedule.map { it.course_code }.distinct()
             val subjectEntities = uniqueCodes.mapNotNull { code ->
                 val courseInfo = data.courses.find { it.code.equals(code, ignoreCase = true) }
                 val displayName = courseInfo?.name?.ifEmpty { null } ?: code
-                val isPractical = data.schedule.filter { it.course_code.equals(code, ignoreCase = true) }
+                val isPractical = finalSchedule.filter { it.course_code.equals(code, ignoreCase = true) }
                     .any { it.type.equals("Practical", ignoreCase = true) || it.type.equals("P", ignoreCase = true) }
 
                 val finalName = if (isPractical && !displayName.startsWith("(Lab)")) "(Lab) $displayName" else displayName
-                val facultyName = data.schedule.firstOrNull { it.course_code.equals(code, ignoreCase = true) }?.faculty_name ?: ""
-                val facultyAbbr = data.schedule.firstOrNull { it.course_code.equals(code, ignoreCase = true) }?.faculty_abbr ?: ""
+                val facultyName = finalSchedule.firstOrNull { it.course_code.equals(code, ignoreCase = true) }?.faculty_name ?: ""
+                val facultyAbbr = finalSchedule.firstOrNull { it.course_code.equals(code, ignoreCase = true) }?.faculty_abbr ?: ""
 
                 SubjectEntity(
                     subjectId = code,
@@ -137,14 +163,27 @@ class TimetableRepositoryImpl(
             subjectDao.insertAll(subjectEntities)
 
             // Sync with TimeTableManager
-            TimeTableManager.setParsedTimetable(data, context)
+            val updatedData = data.copy(schedule = finalSchedule)
+            TimeTableManager.setParsedTimetable(updatedData, context)
         }
     }
 
     override suspend fun saveCustomEvent(event: ScheduleEvent, courseName: String?) {
         withContext(Dispatchers.IO) {
-            val activeMeta = metadataDao.getActiveTimetableDirect()
-            val timetableId = activeMeta?.id ?: TimeTableManager.getTimetableId()
+            var activeMeta = metadataDao.getActiveTimetableDirect()
+            if (activeMeta == null) {
+                val fallbackId = TimeTableManager.getTimetableId()
+                activeMeta = TimetableMetadataEntity(
+                    id = fallbackId,
+                    name = "Default Timetable",
+                    pageIndex = 0,
+                    semester = TimeTableManager.activeTimetableData?.semester ?: "",
+                    isCustomized = true,
+                    isActive = true
+                )
+                metadataDao.insertOrUpdate(activeMeta)
+            }
+            val timetableId = activeMeta.id
 
             val startMins = parseTimeToMinutes(event.time.substringBefore(" - "))
             val endMins = parseTimeToMinutes(event.time.substringAfter(" - "))
@@ -176,7 +215,41 @@ class TimetableRepositoryImpl(
         courseName: String?
     ) {
         withContext(Dispatchers.IO) {
-            saveCustomEvent(updatedEvent, courseName)
+            var activeMeta = metadataDao.getActiveTimetableDirect()
+            if (activeMeta == null) {
+                val fallbackId = TimeTableManager.getTimetableId()
+                activeMeta = TimetableMetadataEntity(
+                    id = fallbackId,
+                    name = "Default Timetable",
+                    pageIndex = 0,
+                    semester = TimeTableManager.activeTimetableData?.semester ?: "",
+                    isCustomized = true,
+                    isActive = true
+                )
+                metadataDao.insertOrUpdate(activeMeta)
+            }
+            val timetableId = activeMeta.id
+
+            val startMins = parseTimeToMinutes(updatedEvent.time.substringBefore(" - "))
+            val endMins = parseTimeToMinutes(updatedEvent.time.substringAfter(" - "))
+
+            val entity = ScheduleEventEntity(
+                id = updatedEvent.id,
+                timetableId = timetableId,
+                dayOfWeek = updatedEvent.day,
+                time = updatedEvent.time,
+                startTime = updatedEvent.start_time,
+                endTime = updatedEvent.end_time,
+                startMinutes = startMins,
+                endMinutes = endMins,
+                courseCode = updatedEvent.course_code,
+                type = updatedEvent.type,
+                location = updatedEvent.location,
+                group = updatedEvent.group,
+                facultyAbbr = updatedEvent.faculty_abbr,
+                facultyName = updatedEvent.faculty_name
+            )
+            eventDao.insertOrUpdate(entity)
             TimeTableManager.updateEvent(originalEvent, updatedEvent, courseName, context)
         }
     }
@@ -190,9 +263,27 @@ class TimetableRepositoryImpl(
 
     override suspend fun resetToOriginalPdf(originalData: TimetableData?) {
         withContext(Dispatchers.IO) {
+            val activeMeta = getActiveTimetableDirect()
+            val timetableId = activeMeta?.id ?: TimeTableManager.getTimetableId()
+            val overrides = shiftOverrideDao.getOverridesForTimetableDirect(timetableId)
+            val attendanceDao = db.attendanceDao()
+            overrides.forEach { override ->
+                attendanceDao.updateShiftedAttendanceTime(
+                    timetableId = timetableId,
+                    subjectId = override.courseCode,
+                    originalTime = override.newTime,
+                    newTime = override.originalTime,
+                    effectiveDate = override.effectiveDate
+                )
+            }
+            shiftOverrideDao.deleteByTimetableId(timetableId)
+            eventDao.deleteByTimetableId(timetableId)
+            if (activeMeta != null) {
+                metadataDao.insertOrUpdate(activeMeta.copy(isCustomized = false))
+            }
             TimeTableManager.resetToOriginalPdf(context, originalData)
             if (originalData != null) {
-                setParsedTimetable(originalData, "Original.pdf", 0)
+                setParsedTimetable(originalData, activeMeta?.name ?: "Original.pdf", activeMeta?.pageIndex ?: 0)
             }
         }
     }
@@ -208,6 +299,18 @@ class TimetableRepositoryImpl(
 
     override fun getCourseName(courseCode: String): String {
         return TimeTableManager.getCourseName(courseCode)
+    }
+
+    override suspend fun saveClassShiftOverride(override: ClassShiftOverrideEntity) {
+        withContext(Dispatchers.IO) {
+            shiftOverrideDao.insertOrUpdate(override)
+        }
+    }
+
+    override suspend fun getClassShiftOverridesDirect(): List<ClassShiftOverrideEntity> = withContext(Dispatchers.IO) {
+        val activeMeta = metadataDao.getActiveTimetableDirect()
+        val activeId = activeMeta?.id ?: TimeTableManager.getTimetableId()
+        shiftOverrideDao.getOverridesForTimetableDirect(activeId)
     }
 
     private fun parseTimeToMinutes(timeStr: String): Int {
@@ -232,7 +335,8 @@ fun ScheduleEventEntity.toClassEntity(dayOfWeek: DayOfWeek): ClassEntity {
         time = time,
         dayOfWeek = dayOfWeek,
         roomNo = location ?: "N/A",
-        attendanceStatus = null
+        attendanceStatus = null,
+        group = group
     )
 }
 

@@ -52,6 +52,7 @@ fun HomeComponent(
 
     // Early PDF auto-load: parse cached timetable at app launch so all tabs see dynamic subjects
     LaunchedEffect(Unit) {
+        if (TimeTableManager.activeTimetableData != null) return@LaunchedEffect
         try {
             val savedName = PrefsManager.getString("last_pdf_name")
             val savedPageIdx = PrefsManager.getInt("last_page_index")
@@ -59,7 +60,8 @@ fun HomeComponent(
             if (savedName != null && savedPageIdx != null && localFile.exists()) {
                 val bytes = localFile.readBytes()
                 val parsed = LocalPdfParser.parseTimetablePage(bytes, savedPageIdx)
-                TimeTableManager.setParsedTimetable(parsed)
+                val repository = com.kanhaji.upastithi.features.home.data.repository.TimetableRepositoryImpl()
+                repository.setParsedTimetable(parsed, savedName, savedPageIdx)
             }
         } catch (_: Exception) { }
     }

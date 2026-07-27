@@ -97,6 +97,10 @@ fun TimetableSection(
     var timetableData by remember { mutableStateOf<TimetableData?>(TimeTableManager.activeTimetableData) }
     var originalPdfData by remember { mutableStateOf<TimetableData?>(TimeTableManager.activeTimetableData) }
 
+    LaunchedEffect(TimeTableManager.activeTimetableData) {
+        timetableData = TimeTableManager.activeTimetableData
+    }
+
     var showWarningDialog by remember { mutableStateOf(false) }
     var pendingFileBytes by remember { mutableStateOf<ByteArray?>(null) }
     var pendingFileName by remember { mutableStateOf<String?>(null) }
@@ -197,6 +201,11 @@ fun TimetableSection(
     }
 
     LaunchedEffect(Unit) {
+        selectedFileName = PrefsManager.getString("last_pdf_name")
+        if (TimeTableManager.activeTimetableData != null) {
+            timetableData = TimeTableManager.activeTimetableData
+            return@LaunchedEffect
+        }
         coroutineScope.launch {
             try {
                 val savedName = PrefsManager.getString("last_pdf_name")
@@ -211,7 +220,9 @@ fun TimetableSection(
                     val parsed = LocalPdfParser.parseTimetablePage(bytes, savedPageIdx)
                     originalPdfData = parsed
 
-                    timetableData = parsed
+                    val repository = com.kanhaji.upastithi.features.home.data.repository.TimetableRepositoryImpl()
+                    repository.setParsedTimetable(parsed, savedName, savedPageIdx)
+                    timetableData = TimeTableManager.activeTimetableData ?: parsed
                     isLoading = false
                 }
             } catch (e: Exception) {
@@ -297,6 +308,7 @@ fun TimetableSection(
                     pagerState = pagerState,
                     daysList = daysList,
                     timetableData = data,
+                    screenModel = screenModel,
                     topPadding = if (tabRowHeightDp > 0.dp) tabRowHeightDp else 68.dp,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -404,9 +416,13 @@ fun TimetableSection(
     if (showResetDialog) {
         ResetTimetableDialog(
             onConfirmReset = {
-                TimeTableManager.resetToOriginalPdf(context, originalPdfData)
-                timetableData = TimeTableManager.activeTimetableData
-                showResetDialog = false
+                coroutineScope.launch {
+                    val cleanOriginalData = TimeTableManager.loadOriginalTimetableJson(context)
+                    val repository = com.kanhaji.upastithi.features.home.data.repository.TimetableRepositoryImpl()
+                    repository.resetToOriginalPdf(cleanOriginalData)
+                    timetableData = TimeTableManager.activeTimetableData
+                    showResetDialog = false
+                }
             },
             onDismiss = { showResetDialog = false }
         )
