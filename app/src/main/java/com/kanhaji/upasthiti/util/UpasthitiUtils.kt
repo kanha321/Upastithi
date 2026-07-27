@@ -24,6 +24,7 @@ object UpasthitiUtils {
     const val UPDATE_ENDPOINT = "/update.json"
 
     var updateChecked by mutableStateOf(false)
+    var hasCheckedUninstallThisSession = false
     val noClassesMessages = listOf(
         // Motivational
         "No classes today - perfect time to level up your skills!",

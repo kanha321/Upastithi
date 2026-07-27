@@ -42,6 +42,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.kanhaji.upasthiti.features.home.ui.components.ShareExportBottomSheet
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import kotlinx.coroutines.delay
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeComponent(
@@ -52,10 +68,22 @@ fun HomeComponent(
     val navigator = LocalNavigator.currentOrThrow
     val context = androidx.compose.ui.platform.LocalContext.current
     var showShareBottomSheet by remember { mutableStateOf(false) }
+    var showUninstallDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (!UpasthitiUtils.updateChecked)
             screenModel.getUpdateInfo()
+    }
+
+    LaunchedEffect(Unit) {
+        if (!UpasthitiUtils.hasCheckedUninstallThisSession) {
+            UpasthitiUtils.hasCheckedUninstallThisSession = true
+            delay(1000)
+            try {
+                context.packageManager.getPackageInfo("com.kanhaji.upastithi", 0)
+                showUninstallDialog = true
+            } catch (_: Exception) { }
+        }
     }
 
     // Early PDF auto-load: parse cached timetable at app launch so all tabs see dynamic subjects
@@ -105,6 +133,80 @@ fun HomeComponent(
         if (showShareBottomSheet) {
             ShareExportBottomSheet(
                 onDismiss = { showShareBottomSheet = false }
+            )
+        }
+
+        if (showUninstallDialog) {
+            AlertDialog(
+                onDismissRequest = { showUninstallDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.DeleteForever,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(32.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        text = "Uninstall Old App Version",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "We detected that you still have the legacy version of Upasthiti (com.kanhaji.upastithi) installed on your device.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "Please uninstall the old version to save storage space and avoid duplicate app confusion.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showUninstallDialog = false
+                            val targetPackage = "com.kanhaji.upastithi"
+                            val packageUri = android.net.Uri.parse("package:$targetPackage")
+                            try {
+                                val intent = android.content.Intent(android.content.Intent.ACTION_DELETE, packageUri)
+                                context.startActivity(intent)
+                            } catch (_: Exception) {
+                                try {
+                                    val intent = android.content.Intent(android.content.Intent.ACTION_UNINSTALL_PACKAGE, packageUri).apply {
+                                        putExtra(android.content.Intent.EXTRA_RETURN_RESULT, true)
+                                    }
+                                    context.startActivity(intent)
+                                } catch (ex: Exception) {
+                                    com.kanhaji.upasthiti.util.KToast.show(context, "Could not launch uninstall: ${ex.localizedMessage}")
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.DeleteForever, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Uninstall Old App")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showUninstallDialog = false }) {
+                        Text("Later")
+                    }
+                }
             )
         }
         Box(
