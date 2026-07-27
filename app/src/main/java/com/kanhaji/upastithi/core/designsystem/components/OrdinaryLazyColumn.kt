@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +33,7 @@ fun GenericLazyColumn(
     itemCount: Int,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    listState: LazyListState = ListState.value,
+    listState: LazyListState? = null,
     key: Any? = null,
     onItemClick: ((Int) -> Unit)? = null,
     enabled: Boolean = true,
@@ -48,6 +49,7 @@ fun GenericLazyColumn(
     cardContent: @Composable (Int) -> Unit
 ) {
     var hoveredIndex by remember { mutableStateOf<Int?>(null) }
+    val actualListState = listState ?: rememberLazyListState()
 
     LazyColumn(
         modifier = modifier
@@ -58,7 +60,7 @@ fun GenericLazyColumn(
             start = contentPadding.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
             end = contentPadding.calculateEndPadding(layoutDirection = LayoutDirection.Ltr)
         ),
-        state = listState,
+        state = actualListState,
     ) {
         items(count = itemCount, key = { index -> "$key-$index" }) { index ->
             Box(
