@@ -1,5 +1,6 @@
 package com.kanhaji.upastithi.features.home.ui.components
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,26 +29,40 @@ import androidx.compose.ui.unit.dp
 import com.kanhaji.upastithi.features.home.domain.model.CourseInfo
 import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.kanhaji.upastithi.AndroidContext
 import com.kanhaji.upastithi.features.home.data.AttendanceStatus
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.runtime.CompositionLocalProvider
 
 @Composable
 fun ScheduleEventCard(
     event: ScheduleEvent,
     courseInfo: CourseInfo?,
     attendanceStatus: AttendanceStatus? = null,
-    onEditClick: ((ScheduleEvent) -> Unit)? = null
+    onEditClick: ((ScheduleEvent) -> Unit)? = null,
+    onShiftClick: ((ScheduleEvent) -> Unit)? = null
 ) {
-    val isLab = event.type.equals("P", ignoreCase = true) || event.type.equals("Practical", ignoreCase = true)
+    val isLab = event.type.equals("P", ignoreCase = true) || event.type.equals(
+        "Practical",
+        ignoreCase = true
+    )
     val fullCourseName = courseInfo?.name?.ifEmpty { null } ?: event.course_code
-    val borderColor = attendanceStatus?.color ?: if (isLab) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outlineVariant
-    val containerColor = attendanceStatus?.color?.copy(alpha = 0.12f) ?: if (isLab) MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceContainerLow
+    val borderColor = attendanceStatus?.color ?: if (isLab) MaterialTheme.colorScheme.tertiary.copy(
+        alpha = 0.4f
+    ) else MaterialTheme.colorScheme.outlineVariant
+    val containerColor = attendanceStatus?.color?.copy(alpha = 0.12f)
+        ?: if (isLab) MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceContainerLow
 
     OutlinedCard(
         onClick = { onEditClick?.invoke(event) },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
-        border = BorderStroke(width = if (attendanceStatus != null) 2.dp else 1.dp, color = borderColor)
+        border = BorderStroke(
+            width = if (attendanceStatus != null) 2.dp else 1.dp,
+            color = borderColor
+        )
     ) {
         Column(
             modifier = Modifier
@@ -93,6 +108,53 @@ fun ScheduleEventCard(
                             )
                         }
                     }
+                    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            onClick = { onShiftClick?.invoke(event) }
+                        ) {
+                            // this for shift class
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Schedule,
+                                    contentDescription = "Shifted Class",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    text = "Shift",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                    ) {
+                        Text(
+                            text = event.course_code,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = if (isLab) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.secondaryContainer
@@ -105,21 +167,6 @@ fun ScheduleEventCard(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                }
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                ) {
-                    Text(
-                        text = event.course_code,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
                 }
                 Text(
                     text = fullCourseName,
@@ -179,7 +226,10 @@ fun ScheduleEventCard(
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = MaterialTheme.colorScheme.primaryContainer,
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                            )
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),

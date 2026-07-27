@@ -1,5 +1,8 @@
 package com.kanhaji.upastithi.features.home.ui.components
 
+import android.widget.Toast
+import com.kanhaji.upastithi.data.TimeTableManager
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
 import com.kanhaji.upastithi.features.home.ui.HomeScreenModel
 import com.kanhaji.upastithi.util.getClasses
@@ -45,6 +49,7 @@ import kotlin.time.ExperimentalTime
 fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
     val context = LocalContext.current
 
+    var showUploadPromptDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedDayOfWeek by remember { mutableStateOf<DayOfWeek?>(null) }
@@ -58,6 +63,10 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
         CompositionLocalProvider(LocalRippleConfiguration provides null) {
             OutlinedCard(
                 onClick = {
+                    if (TimeTableManager.activeTimetableData == null) {
+                        showUploadPromptDialog = true
+                        return@OutlinedCard
+                    }
                     selectedDate = day.date.toKotlinLocalDate()
                     selectedDayOfWeek = day.date.dayOfWeek
                     showDateDialog = true
@@ -166,9 +175,14 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
                         )
 
                         Spacer(modifier = Modifier.height(2.dp))
+                        val isCurrentMonth = day.position == DayPosition.MonthDate
+                        val dateKotlin = day.date.toKotlinLocalDate()
                         MultiDotIndicator(
-                            date = day.date.toKotlinLocalDate(),
-                            allAttendances = screenModel.attendanceByDate[day.date.toKotlinLocalDate()] ?: emptyList()
+                            date = dateKotlin,
+                            allAttendances = screenModel.attendanceByDate[dateKotlin] ?: emptyList(),
+                            isToday = dateKotlin == today,
+                            isGrayedOut = !isCurrentMonth,
+                            isFutureDate = isCurrentMonth && dateKotlin > today
                         )
                     }
                 }
@@ -182,6 +196,32 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
         if (showDateDialog && selectedDate != null) {
             dialogClasses = screenModel.getClassesForDateUseCase(selectedDate!!)
         }
+    }
+
+    if (showUploadPromptDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showUploadPromptDialog = false },
+            title = {
+                Text(
+                    text = "Upload Timetable",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Please upload a timetable PDF in the Timetable tab to view your class schedule and mark attendance.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { showUploadPromptDialog = false }
+                ) {
+                    Text("OK", fontWeight = FontWeight.Bold)
+                }
+            },
+            shape = RoundedCornerShape(20.dp)
+        )
     }
 
     if (showDateDialog && selectedDate != null && dialogClasses != null) {

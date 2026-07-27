@@ -55,6 +55,8 @@ import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
 import com.kanhaji.upastithi.features.home.ui.HomeScreenModel
 import com.kanhaji.upastithi.util.KToast
 import com.kanhaji.upastithi.util.UpasthitiUtils
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.IconButton
 import io.github.boguszpawlowski.composecalendar.kotlinxDateTime.now
 import kotlinx.datetime.LocalDate
 
@@ -89,18 +91,32 @@ fun ClassAttendanceStepperDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Header Title & Date Subtitle
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = if (step == 0) "Mark Attendance" else "Select Status",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = if (step == 0) dateFormatted else selectedClass?.subject?.displayName ?: dateFormatted,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = if (step == 0) "Mark Attendance" else "Select Status",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        val subtitleText = remember(step, dateFormatted, selectedClass) {
+                            if (step == 0) dateFormatted
+                            else {
+                                val name = selectedClass?.subject?.displayName ?: dateFormatted
+                                val grp = selectedClass?.group
+                                if (!grp.isNullOrBlank()) "$name • Group $grp" else name
+                            }
+                        }
+                        Text(
+                            text = subtitleText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
                 // Main Content Body

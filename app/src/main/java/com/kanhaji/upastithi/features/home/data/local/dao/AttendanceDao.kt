@@ -39,4 +39,7 @@ interface AttendanceDao {
 
     @Query("DELETE FROM attendance_records WHERE id = :id")
     fun deleteById(id: String): Int
+
+    @Query("UPDATE attendance_records SET time = :newTime, id = (CASE WHEN timetableId != '' THEN timetableId ELSE 'default' END) || '_' || date || '_' || :newTime || '_' || subjectId WHERE (timetableId = :timetableId OR timetableId = '' OR :timetableId = 'default') AND subjectId = :subjectId AND time = :originalTime AND date >= :effectiveDate")
+    fun updateShiftedAttendanceTime(timetableId: String, subjectId: String, originalTime: String, newTime: String, effectiveDate: String): Int
 }

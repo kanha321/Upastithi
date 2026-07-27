@@ -88,7 +88,13 @@ fun EditClassDialog(
 
                 OutlinedTextField(
                     value = courseCode,
-                    onValueChange = { courseCode = it },
+                    onValueChange = { newCode ->
+                        courseCode = newCode
+                        val matchingName = com.kanhaji.upastithi.data.TimeTableManager.getCourseName(newCode)
+                        if (matchingName.isNotBlank() && !matchingName.equals(newCode, ignoreCase = true)) {
+                            courseName = matchingName
+                        }
+                    },
                     label = { Text("Course Code (e.g. CS35101)") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -96,7 +102,13 @@ fun EditClassDialog(
 
                 OutlinedTextField(
                     value = courseName,
-                    onValueChange = { courseName = it },
+                    onValueChange = { newName ->
+                        courseName = newName
+                        val matchingCode = com.kanhaji.upastithi.data.TimeTableManager.getCourseCode(newName)
+                        if (!matchingCode.isNullOrBlank()) {
+                            courseCode = matchingCode
+                        }
+                    },
                     label = { Text("Course Name") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()

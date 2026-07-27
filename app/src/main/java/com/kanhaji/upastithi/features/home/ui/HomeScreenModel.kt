@@ -22,7 +22,11 @@ import com.kanhaji.upastithi.features.home.domain.usecase.SaveAttendanceUseCase
 import com.kanhaji.upastithi.util.UpasthitiUtils
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import com.kanhaji.upastithi.features.home.data.local.entity.ClassShiftOverrideEntity
+import com.kanhaji.upastithi.features.home.data.repository.TimetableRepositoryImpl
+import com.kanhaji.upastithi.features.home.domain.repository.TimetableRepository
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
 class HomeScreenModel(
@@ -35,6 +39,11 @@ class HomeScreenModel(
     var isUpdateAvailable by mutableStateOf(false)
 
     init {
+        screenModelScope.launch {
+            val repository = TimetableRepositoryImpl()
+            val overrides = repository.getClassShiftOverridesDirect()
+            com.kanhaji.upastithi.data.TimeTableManager.setClassShiftOverrides(overrides)
+        }
         screenModelScope.launch {
             AttendanceStorage.getAttendanceFlow().collect { map ->
                 attendanceByDate.clear()
@@ -60,6 +69,45 @@ class HomeScreenModel(
             saveAttendanceUseCase(classEntity = classEntity, attendanceStatus = attendanceStatus, date = date)
             val updatedList = AttendanceStorage.getAttendanceForDate(date)
             attendanceByDate[date] = updatedList
+        }
+    }
+
+    fun shiftClass(
+        classEntity: ClassEntity,
+        newDayOfWeek: DayOfWeek,
+        newTime: String,
+        newLocation: String,
+        effectiveDate: LocalDate,
+        timetableRepository: TimetableRepository = TimetableRepositoryImpl()
+    ) {
+        screenModelScope.launch {
+            val activeMeta = timetableRepository.getActiveTimetableDirect()
+            val timetableId = activeMeta?.id ?: com.kanhaji.upastithi.data.TimeTableManager.getTimetableId()
+            val override = ClassShiftOverrideEntity(
+                timetableId = timetableId,
+                courseCode = classEntity.subject.subjectId,
+                originalDayOfWeek = classEntity.dayOfWeek.name,
+                originalTime = classEntity.time,
+                effectiveDate = effectiveDate.toString(),
+                newDayOfWeek = newDayOfWeek.name,
+                newTime = newTime,
+                newLocation = newLocation
+            )
+            timetableRepository.saveClassShiftOverride(override)
+            com.kanhaji.upastithi.data.TimeTableManager.addClassShiftOverride(override)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                com.kanhaji.upastithi.features.home.data.local.UpasthitiDatabase
+                    .getInstance(AndroidContext.appContext)
+                    .attendanceDao()
+                    .updateShiftedAttendanceTime(
+                        timetableId = timetableId,
+                        subjectId = classEntity.subject.subjectId,
+                        originalTime = classEntity.time,
+                        newTime = newTime,
+                        effectiveDate = effectiveDate.toString()
+                    )
+            }
+            refreshAttendance()
         }
     }
 

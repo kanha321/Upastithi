@@ -1,5 +1,6 @@
 package com.kanhaji.upastithi.features.home.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,18 +31,67 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.kanhaji.upastithi.data.TimeTableManager
+import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
+import com.kanhaji.upastithi.features.home.domain.model.ScheduleEvent
 import com.kanhaji.upastithi.features.home.domain.model.TimetableData
+import com.kanhaji.upastithi.features.home.ui.HomeScreenModel
 import com.kanhaji.upastithi.screen.edit.EditClassScreen
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.kanhaji.upastithi.features.home.data.Subject
 
 @Composable
 fun DaySchedulePager(
     pagerState: PagerState,
     daysList: List<String>,
     timetableData: TimetableData,
+    screenModel: HomeScreenModel,
     modifier: Modifier = Modifier,
     topPadding: Dp = 64.dp
 ) {
     val navigator = LocalNavigator.currentOrThrow
+    var shiftingEvent by remember { mutableStateOf<Pair<ScheduleEvent, DayOfWeek>?>(null) }
+    val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
+
+    shiftingEvent?.let { (event, dayOfWeek) ->
+        val classEntity = remember(event, dayOfWeek) {
+            ClassEntity(
+                classId = event.id,
+                dayOfWeek = dayOfWeek,
+                time = event.time,
+                subject = Subject(
+                    displayName = event.course_code,
+                    subjectId = event.course_code,
+                    teacher = event.faculty_name ?: "",
+                    teacherInitials = event.faculty_abbr ?: ""
+                ),
+                roomNo = event.location ?: "",
+                attendanceStatus = null
+            )
+        }
+        ClassShiftBottomSheet(
+            classEntity = classEntity,
+            currentDate = today,
+            onDismiss = { shiftingEvent = null },
+            onConfirmShift = { newDay, newTime, newLocation, effectiveDate ->
+                screenModel.shiftClass(
+                    classEntity = classEntity,
+                    newDayOfWeek = newDay,
+                    newTime = newTime,
+                    newLocation = newLocation,
+                    effectiveDate = effectiveDate
+                )
+                shiftingEvent = null
+            }
+        )
+    }
 
     HorizontalPager(
         state = pagerState,
@@ -48,7 +99,8 @@ fun DaySchedulePager(
         verticalAlignment = Alignment.Top
     ) { pageIndex ->
         val day = daysList[pageIndex]
-        val dayEvents = timetableData.schedule.filter { it.day.equals(day, ignoreCase = true) }
+        val currentData = TimeTableManager.activeTimetableData ?: timetableData
+        val dayEvents = TimeTableManager.getScheduleEventsForDay(day, currentData)
 
         if (dayEvents.isEmpty()) {
             Box(
@@ -89,15 +141,19 @@ fun DaySchedulePager(
                 contentPadding = PaddingValues(top = topPadding + 12.dp, bottom = 90.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(
+                itemsIndexed(
                     items = dayEvents,
-                    key = { it.id }
-                ) { event ->
+                    key = { index, event -> "${event.id}_${event.time}_$index" }
+                ) { _, event ->
                     val courseInfo = timetableData.courses.find { it.code.equals(event.course_code, ignoreCase = true) }
                     ScheduleEventCard(
                         event = event,
                         courseInfo = courseInfo,
-                        onEditClick = { ev -> navigator.push(EditClassScreen(event = ev)) }
+                        onEditClick = { ev -> navigator.push(EditClassScreen(event = ev)) },
+                        onShiftClick = { ev ->
+                            val parsedDay = runCatching { DayOfWeek.valueOf(day.uppercase()) }.getOrDefault(DayOfWeek.MONDAY)
+                            shiftingEvent = Pair(ev, parsedDay)
+                        }
                     )
                 }
 

@@ -1,6 +1,7 @@
 package com.kanhaji.upastithi.features.home.domain.repository
 
 import com.kanhaji.upastithi.features.home.data.Subject
+import com.kanhaji.upastithi.features.home.data.local.entity.ClassShiftOverrideEntity
 import com.kanhaji.upastithi.features.home.data.local.entity.ScheduleEventEntity
 import com.kanhaji.upastithi.features.home.data.local.entity.TimetableMetadataEntity
 import com.kanhaji.upastithi.features.home.domain.model.ClassEntity
@@ -11,6 +12,7 @@ import kotlinx.datetime.DayOfWeek
 
 interface TimetableRepository {
     fun getActiveTimetable(): Flow<TimetableMetadataEntity?>
+    suspend fun getActiveTimetableDirect(): TimetableMetadataEntity?
     fun getClassesForDay(dayOfWeek: DayOfWeek): Flow<List<ClassEntity>>
     suspend fun getClassesForDayDirect(dayOfWeek: DayOfWeek): List<ClassEntity>
     fun getSubjects(): Flow<List<Subject>>
@@ -22,4 +24,6 @@ interface TimetableRepository {
     suspend fun resetToOriginalPdf(originalData: TimetableData?)
     fun findCollidingEvent(day: String, startTimeStr: String, endTimeStr: String, excludeEventId: String? = null): ScheduleEvent?
     fun getCourseName(courseCode: String): String
+    suspend fun saveClassShiftOverride(override: ClassShiftOverrideEntity)
+    suspend fun getClassShiftOverridesDirect(): List<ClassShiftOverrideEntity>
 }

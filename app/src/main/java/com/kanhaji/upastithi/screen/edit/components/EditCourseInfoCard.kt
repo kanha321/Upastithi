@@ -30,6 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kanhaji.basics.composables.KTextField
 
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.runtime.remember
+import com.kanhaji.upastithi.data.TimeTableManager
+
 @Composable
 fun EditCourseInfoCard(
     courseCode: String,
@@ -40,6 +44,9 @@ fun EditCourseInfoCard(
     onPracticalToggled: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val courseCodeSuggestions = remember { TimeTableManager.getAllCourseCodes() }
+    val courseNameSuggestions = remember { TimeTableManager.getAllCourseNames() }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -59,18 +66,48 @@ fun EditCourseInfoCard(
 
             KTextField(
                 value = courseCode,
-                onValueChange = onCourseCodeChanged,
+                onValueChange = { newCode ->
+                    onCourseCodeChanged(newCode)
+                    val matchingName = TimeTableManager.getCourseName(newCode)
+                    if (matchingName.isNotBlank() && !matchingName.equals(newCode, ignoreCase = true)) {
+                        onCourseNameChanged(matchingName)
+                    }
+                },
                 label = "Course Code",
                 placeholder = "e.g. CS35101",
-                leadingIcon = Icons.Default.Code
+                leadingIcon = Icons.Default.Code,
+                suggestions = courseCodeSuggestions,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Course Code",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             )
 
             KTextField(
                 value = courseName,
-                onValueChange = onCourseNameChanged,
+                onValueChange = { newName ->
+                    onCourseNameChanged(newName)
+                    val matchingCode = TimeTableManager.getCourseCode(newName)
+                    if (!matchingCode.isNullOrBlank()) {
+                        onCourseCodeChanged(matchingCode)
+                    }
+                },
                 label = "Course Title",
                 placeholder = "e.g. Multimedia Technology",
-                leadingIcon = Icons.Default.Book
+                leadingIcon = Icons.Default.Book,
+                suggestions = courseNameSuggestions,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Course Title",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             )
 
             Text(
