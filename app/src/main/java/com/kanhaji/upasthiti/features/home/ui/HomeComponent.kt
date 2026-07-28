@@ -58,6 +58,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import kotlinx.coroutines.delay
 import androidx.core.net.toUri
 
@@ -74,6 +82,28 @@ fun HomeComponent(
     var showUninstallDialog by remember { mutableStateOf(false) }
     var showAttendanceHelpDialog by remember { mutableStateOf(false) }
     var showTimetableHelpDialog by remember { mutableStateOf(false) }
+    var isBottomBarVisible by remember { mutableStateOf(true) }
+
+    LaunchedEffect(pagerState.currentPage) {
+        isBottomBarVisible = true
+    }
+
+    val nestedScrollConnection = remember {
+        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+            override fun onPreScroll(
+                available: androidx.compose.ui.geometry.Offset,
+                source: androidx.compose.ui.input.nestedscroll.NestedScrollSource
+            ): androidx.compose.ui.geometry.Offset {
+                val delta = available.y
+                if (delta < -12f) {
+                    isBottomBarVisible = false
+                } else if (delta > 12f) {
+                    isBottomBarVisible = true
+                }
+                return androidx.compose.ui.geometry.Offset.Zero
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (!UpasthitiUtils.updateChecked)
@@ -392,6 +422,7 @@ fun HomeComponent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .nestedScroll(nestedScrollConnection)
         ) {
             HorizontalPager(
                 state = pagerState,
@@ -404,14 +435,20 @@ fun HomeComponent(
                 }
             }
 
-            // Floating Capsule Overlay (Exact KernelSU-Next Architecture)
-            FloatingSpringBottomBar(
-                selectedPage = pagerState.currentPage,
-                onPageSelected = { page ->
-                    scope.launch { pagerState.animateScrollToPage(page) }
-                },
+            // Floating Capsule Overlay with Slide Down / Slide Up Animation
+            AnimatedVisibility(
+                visible = isBottomBarVisible,
+                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
                 modifier = Modifier.align(Alignment.BottomCenter)
-            )
+            ) {
+                FloatingSpringBottomBar(
+                    selectedPage = pagerState.currentPage,
+                    onPageSelected = { page ->
+                        scope.launch { pagerState.animateScrollToPage(page) }
+                    }
+                )
+            }
         }
     }
 }
