@@ -57,6 +57,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.delay
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -176,7 +177,7 @@ fun HomeComponent(
                         onClick = {
                             showUninstallDialog = false
                             val targetPackage = "com.kanhaji.upastithi"
-                            val packageUri = android.net.Uri.parse("package:$targetPackage")
+                            val packageUri = "package:$targetPackage".toUri()
                             try {
                                 val intent = android.content.Intent(android.content.Intent.ACTION_DELETE, packageUri)
                                 context.startActivity(intent)
