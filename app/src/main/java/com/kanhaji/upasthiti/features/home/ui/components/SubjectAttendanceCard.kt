@@ -31,12 +31,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kanhaji.upasthiti.features.home.data.Subject
 
+import com.kanhaji.upasthiti.features.home.data.AttendanceMode
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.runtime.CompositionLocalProvider
+
 @Composable
 fun SubjectAttendanceCard(
     subject: Subject,
     attendedCount: Int,
     totalCount: Int,
-    percentage: Float
+    percentage: Float,
+    attendanceMode: AttendanceMode = AttendanceMode.PER_SLOT,
+    onToggleMode: () -> Unit = {}
 ) {
     val isLab = subject.displayName.contains("(Lab)", ignoreCase = true) ||
                 subject.displayName.contains("Lab", ignoreCase = true) ||
@@ -211,18 +220,52 @@ fun SubjectAttendanceCard(
                         fontWeight = FontWeight.Bold
                     )
 
-                    // Right Side: Clean Status Badge
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = if (isNewSubject) MaterialTheme.colorScheme.surfaceVariant else attendanceColor
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = statusText,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (isNewSubject) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.surface,
-                            fontWeight = FontWeight.Bold
-                        )
+                        // Interactive Attendance Mode Toggle Chip (Per Slot vs Per Day)
+                        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                            Surface(
+                                onClick = onToggleMode,
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Tune,
+                                        contentDescription = "Toggle Attendance Mode",
+                                        modifier = Modifier.size(11.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = if (attendanceMode == AttendanceMode.PER_DAY) "Day" else "Slot",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        // Right Side: Clean Status Badge
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isNewSubject) MaterialTheme.colorScheme.surfaceVariant else attendanceColor
+                        ) {
+                            Text(
+                                text = statusText,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (isNewSubject) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.surface,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }

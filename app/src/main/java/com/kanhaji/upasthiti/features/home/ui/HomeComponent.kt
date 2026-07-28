@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import com.kanhaji.upasthiti.features.home.ui.components.ShareExportBottomSheet
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,6 +58,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import kotlinx.coroutines.delay
 import androidx.core.net.toUri
 
@@ -70,6 +80,30 @@ fun HomeComponent(
     val context = androidx.compose.ui.platform.LocalContext.current
     var showShareBottomSheet by remember { mutableStateOf(false) }
     var showUninstallDialog by remember { mutableStateOf(false) }
+    var showAttendanceHelpDialog by remember { mutableStateOf(false) }
+    var showTimetableHelpDialog by remember { mutableStateOf(false) }
+    var isBottomBarVisible by remember { mutableStateOf(true) }
+
+    LaunchedEffect(pagerState.currentPage) {
+        isBottomBarVisible = true
+    }
+
+    val nestedScrollConnection = remember {
+        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+            override fun onPreScroll(
+                available: androidx.compose.ui.geometry.Offset,
+                source: androidx.compose.ui.input.nestedscroll.NestedScrollSource
+            ): androidx.compose.ui.geometry.Offset {
+                val delta = available.y
+                if (delta < -12f) {
+                    isBottomBarVisible = false
+                } else if (delta > 12f) {
+                    isBottomBarVisible = true
+                }
+                return androidx.compose.ui.geometry.Offset.Zero
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (!UpasthitiUtils.updateChecked)
@@ -124,6 +158,20 @@ fun HomeComponent(
                             contentDescription = "Share & Export"
                         )
                     }
+                    AnimatedVisibility(pagerState.currentPage == 1 || pagerState.currentPage == 2) {
+                        IconButton(onClick = {
+                            if (pagerState.currentPage == 1) {
+                                showAttendanceHelpDialog = true
+                            } else if (pagerState.currentPage == 2) {
+                                showTimetableHelpDialog = true
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Outlined.HelpOutline,
+                                contentDescription = "Help"
+                            )
+                        }
+                    }
                     AnimatedVisibility(screenModel.isUpdateAvailable && Updater.downloadProgress != 1f) {
                         UpdateButton()
                     }
@@ -134,6 +182,164 @@ fun HomeComponent(
         if (showShareBottomSheet) {
             ShareExportBottomSheet(
                 onDismiss = { showShareBottomSheet = false }
+            )
+        }
+
+        if (showTimetableHelpDialog) {
+            AlertDialog(
+                onDismissRequest = { showTimetableHelpDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.HelpOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        text = "Timetable & Class Options",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "✏️ Editing Classes",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Tap on any class card to edit course codes, course titles, venues, timings, or faculty names.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "↔️ Shifting Classes",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Tap the shift action on any class card to temporarily move a lecture or lab to a different time slot or date.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "➕ Adding Extra Classes",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Tap the Add Class button to insert makeup lectures or extra class slots into your schedule.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Text(
+                            text = "💡 Tip: You can reset all edits anytime using 'Reset Timetable' to restore your original PDF baseline.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showTimetableHelpDialog = false },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Got It")
+                    }
+                }
+            )
+        }
+
+        if (showAttendanceHelpDialog) {
+            AlertDialog(
+                onDismissRequest = { showAttendanceHelpDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.HelpOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        text = "Attendance Modes",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "⚙ Slot Mode (Default)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Each class slot is counted individually. For example, 2 slots on Monday = 2 total classes.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "⚙ Day Mode (Per Day)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "All slots for a subject on the same date are grouped into 1 day. If you attend at least 1 slot on that date, the day is marked as Present.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Text(
+                            text = "💡 Tap the [Slot / Day] chip on any subject card to toggle modes for that subject.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showAttendanceHelpDialog = false },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Got It")
+                    }
+                }
             )
         }
 
@@ -155,7 +361,9 @@ fun HomeComponent(
                         text = "Uninstall Old App Version",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 text = {
@@ -214,6 +422,7 @@ fun HomeComponent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .nestedScroll(nestedScrollConnection)
         ) {
             HorizontalPager(
                 state = pagerState,
@@ -226,14 +435,20 @@ fun HomeComponent(
                 }
             }
 
-            // Floating Capsule Overlay (Exact KernelSU-Next Architecture)
-            FloatingSpringBottomBar(
-                selectedPage = pagerState.currentPage,
-                onPageSelected = { page ->
-                    scope.launch { pagerState.animateScrollToPage(page) }
-                },
+            // Floating Capsule Overlay with Slide Down / Slide Up Animation
+            AnimatedVisibility(
+                visible = isBottomBarVisible,
+                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
                 modifier = Modifier.align(Alignment.BottomCenter)
-            )
+            ) {
+                FloatingSpringBottomBar(
+                    selectedPage = pagerState.currentPage,
+                    onPageSelected = { page ->
+                        scope.launch { pagerState.animateScrollToPage(page) }
+                    }
+                )
+            }
         }
     }
 }
