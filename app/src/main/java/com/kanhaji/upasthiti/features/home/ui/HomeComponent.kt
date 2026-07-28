@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,6 +71,7 @@ fun HomeComponent(
     val context = androidx.compose.ui.platform.LocalContext.current
     var showShareBottomSheet by remember { mutableStateOf(false) }
     var showUninstallDialog by remember { mutableStateOf(false) }
+    var showAttendanceHelpDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (!UpasthitiUtils.updateChecked)
@@ -124,6 +126,16 @@ fun HomeComponent(
                             contentDescription = "Share & Export"
                         )
                     }
+                    AnimatedVisibility(pagerState.currentPage == 1) {
+                        IconButton(onClick = {
+                            showAttendanceHelpDialog = true
+                        }) {
+                            Icon(
+                                imageVector = Icons.Outlined.HelpOutline,
+                                contentDescription = "Attendance Help"
+                            )
+                        }
+                    }
                     AnimatedVisibility(screenModel.isUpdateAvailable && Updater.downloadProgress != 1f) {
                         UpdateButton()
                     }
@@ -134,6 +146,76 @@ fun HomeComponent(
         if (showShareBottomSheet) {
             ShareExportBottomSheet(
                 onDismiss = { showShareBottomSheet = false }
+            )
+        }
+
+        if (showAttendanceHelpDialog) {
+            AlertDialog(
+                onDismissRequest = { showAttendanceHelpDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.HelpOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        text = "Attendance Modes",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "⚙ Slot Mode (Default)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Each class slot is counted individually. For example, 2 slots on Monday = 2 total classes.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "⚙ Day Mode (Per Day)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "All slots for a subject on the same date are grouped into 1 day. If you attend at least 1 slot on that date, the day is marked as Present.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Text(
+                            text = "💡 Tap the [Slot / Day] chip on any subject card to toggle modes for that subject.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showAttendanceHelpDialog = false },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Got It")
+                    }
+                }
             )
         }
 

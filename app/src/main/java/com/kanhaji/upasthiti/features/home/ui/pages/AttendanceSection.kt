@@ -15,7 +15,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -89,26 +92,48 @@ fun AttendanceSection(
                 }
             }
         } else {
-            items(sortedSubjects) { subject ->
-                val (attendanceText, percentage) = remember(subject) {
-                    screenModel.getAttendancesForSubject(subject)
+            items(sortedSubjects, key = { it.subjectId.ifEmpty { it.displayName } }) { subject ->
+                var currentMode by remember(subject) {
+                    mutableStateOf(com.kanhaji.upasthiti.features.home.data.AttendanceStorage.getSubjectAttendanceMode(subject))
                 }
 
                 val attendances = remember(subject) {
                     com.kanhaji.upasthiti.features.home.data.AttendanceStorage.getAttendancesForSubject(subject)
                 }
 
-                val totalCount = attendances.size
-                val attendedCount = attendances.count { 
-                    it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PRESENT || 
-                    it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PROXY
+                val (attendedCount, totalCount, percentage) = remember(attendances, currentMode) {
+                    if (currentMode == com.kanhaji.upasthiti.features.home.data.AttendanceMode.PER_SLOT) {
+                        val total = attendances.size
+                        val attended = attendances.count { 
+                            it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PRESENT || 
+                            it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PROXY
+                        }
+                        val pct = if (total == 0) 0f else (attended.toFloat() / total.toFloat()) * 100f
+                        Triple(attended, total, pct)
+                    } else {
+                        // PER_DAY Mode (Option A: Lenient - Present if any slot on that date is Present/Proxy)
+                        val groupedByDate = attendances.groupBy { it.date }
+                        val totalDays = groupedByDate.size
+                        val attendedDays = groupedByDate.count { (_, slotsOnDate) ->
+                            slotsOnDate.any { 
+                                it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PRESENT || 
+                                it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PROXY
+                            }
+                        }
+                        val pct = if (totalDays == 0) 0f else (attendedDays.toFloat() / totalDays.toFloat()) * 100f
+                        Triple(attendedDays, totalDays, pct)
+                    }
                 }
 
                 SubjectAttendanceCard(
                     subject = subject,
                     attendedCount = attendedCount,
                     totalCount = totalCount,
-                    percentage = percentage.toFloat()
+                    percentage = percentage,
+                    attendanceMode = currentMode,
+                    onToggleMode = {
+                        currentMode = com.kanhaji.upasthiti.features.home.data.AttendanceStorage.toggleSubjectAttendanceMode(subject)
+                    }
                 )
             }
         }

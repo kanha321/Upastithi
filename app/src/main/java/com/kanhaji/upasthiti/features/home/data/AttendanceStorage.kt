@@ -16,7 +16,32 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import java.util.UUID
 
+import com.kanhaji.basics.datastore.PrefsManager
+
 object AttendanceStorage {
+
+    private val modeMap = mutableMapOf<String, AttendanceMode>()
+
+    fun getSubjectAttendanceMode(subject: Subject): AttendanceMode {
+        val key = subject.subjectId.ifEmpty { subject.displayName }
+        return modeMap[key] ?: run {
+            val saved = runBlocking(Dispatchers.IO) { PrefsManager.getString("att_mode_$key") }
+            val mode = if (saved == AttendanceMode.PER_DAY.name) AttendanceMode.PER_DAY else AttendanceMode.PER_SLOT
+            modeMap[key] = mode
+            mode
+        }
+    }
+
+    fun toggleSubjectAttendanceMode(subject: Subject): AttendanceMode {
+        val key = subject.subjectId.ifEmpty { subject.displayName }
+        val current = getSubjectAttendanceMode(subject)
+        val next = if (current == AttendanceMode.PER_SLOT) AttendanceMode.PER_DAY else AttendanceMode.PER_SLOT
+        modeMap[key] = next
+        CoroutineScope(Dispatchers.IO).launch {
+            PrefsManager.saveString("att_mode_$key", next.name)
+        }
+        return next
+    }
 
     private fun getDao(context: Context = AndroidContext.appContext): AttendanceDao {
         return UpasthitiDatabase.getInstance(context).attendanceDao()
