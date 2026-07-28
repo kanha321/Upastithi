@@ -36,6 +36,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import com.kanhaji.upasthiti.features.home.data.AttendanceStatus
+import com.kanhaji.upasthiti.features.home.data.AttendanceStorage
+import com.kanhaji.upasthiti.features.home.data.repository.TimetableRepositoryImpl
+import com.kanhaji.upasthiti.util.KToast
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -286,21 +290,21 @@ fun TimetableSection(
                                             teacher = "",
                                             teacherInitials = ""
                                         ),
-                                        attendanceStatus = com.kanhaji.upasthiti.features.home.data.AttendanceStatus.values().firstOrNull { it.name.equals(record.status, ignoreCase = true) }
+                                        attendanceStatus = AttendanceStatus.values().firstOrNull { it.name.equals(record.status, ignoreCase = true) }
                                     )
-                                    com.kanhaji.upasthiti.features.home.data.AttendanceStorage.addAttendance(context, entity)
+                                    AttendanceStorage.addAttendance(context, entity)
                                 }
                                 screenModel.refreshAttendance()
-                                com.kanhaji.upasthiti.util.KToast.show(context, "Successfully imported attendance data!")
+                                KToast.show(context, "Successfully imported attendance data!")
                             } else {
                                 val imported = TimeTableManager.importTimetableJson(contentStr, context)
-                                val repository = com.kanhaji.upasthiti.features.home.data.repository.TimetableRepositoryImpl()
+                                val repository = TimetableRepositoryImpl()
                                 coroutineScope.launch {
                                     repository.setParsedTimetable(imported, name, 0)
                                     timetableData = TimeTableManager.activeTimetableData ?: imported
                                     selectedFileName = name
                                     PrefsManager.saveString("last_pdf_name", name)
-                                    com.kanhaji.upasthiti.util.KToast.show(context, "Successfully imported .upasthiti timetable!")
+                                    KToast.show(context, "Successfully imported .upasthiti timetable!")
                                 }
                             }
                         } catch (ex: Exception) {

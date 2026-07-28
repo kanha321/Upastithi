@@ -69,6 +69,10 @@ import androidx.compose.animation.fadeOut
 import kotlinx.coroutines.delay
 import androidx.core.net.toUri
 
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+import com.kanhaji.upasthiti.util.KToast
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeComponent(
@@ -77,7 +81,7 @@ fun HomeComponent(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     val scope = rememberCoroutineScope()
     val navigator = LocalNavigator.currentOrThrow
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     var showShareBottomSheet by remember { mutableStateOf(false) }
     var showUninstallDialog by remember { mutableStateOf(false) }
     var showAttendanceHelpDialog by remember { mutableStateOf(false) }
@@ -387,16 +391,17 @@ fun HomeComponent(
                             val targetPackage = "com.kanhaji.upastithi"
                             val packageUri = "package:$targetPackage".toUri()
                             try {
-                                val intent = android.content.Intent(android.content.Intent.ACTION_DELETE, packageUri)
+                                val intent = Intent(Intent.ACTION_DELETE, packageUri)
                                 context.startActivity(intent)
                             } catch (_: Exception) {
                                 try {
-                                    val intent = android.content.Intent(android.content.Intent.ACTION_UNINSTALL_PACKAGE, packageUri).apply {
-                                        putExtra(android.content.Intent.EXTRA_RETURN_RESULT, true)
+                                    @Suppress("DEPRECATION")
+                                    val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE, packageUri).apply {
+                                        putExtra(Intent.EXTRA_RETURN_RESULT, true)
                                     }
                                     context.startActivity(intent)
                                 } catch (ex: Exception) {
-                                    com.kanhaji.upasthiti.util.KToast.show(context, "Could not launch uninstall: ${ex.localizedMessage}")
+                                    KToast.show(context, "Could not launch uninstall: ${ex.localizedMessage}")
                                 }
                             }
                         },

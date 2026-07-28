@@ -1,23 +1,34 @@
 package com.kanhaji.basics.screens.settings
 
-import androidx.compose.foundation.isSystemInDarkTheme
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Brightness4
 import androidx.compose.material.icons.outlined.Brightness5
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Colorize
 import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.kanhaji.basics.composables.KButton
@@ -25,11 +36,16 @@ import com.kanhaji.basics.composables.KSwitch
 import com.kanhaji.basics.datastore.PrefsManager
 import com.kanhaji.basics.datastore.PrefsResources
 import com.kanhaji.basics.entity.SettingItems
+import com.kanhaji.basics.entity.Update
 import com.kanhaji.basics.extensions.toTitleCase
-import com.kanhaji.basics.icons.Kmp
-import com.kanhaji.basics.screens.settings.components.hexToColor
+import com.kanhaji.basics.networking.httpClient
 import com.kanhaji.basics.theme.ThemeManager
 import com.kanhaji.basics.theme.isDynamicColorSupported
+import com.kanhaji.upasthiti.util.KToast
+import com.kanhaji.upasthiti.util.UpasthitiUtils
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.launch
 
 object SettingsScreenModel : ScreenModel {
@@ -140,6 +156,141 @@ object SettingsScreenModel : ScreenModel {
                 )
             )
         }
+        return items
+    }
+
+    var isCheckingUpdate by mutableStateOf(false)
+
+    fun checkUpdateManual(context: Context) {
+        if (isCheckingUpdate) return
+        isCheckingUpdate = true
+        KToast.show(context, "Checking for updates...")
+
+        screenModelScope.launch {
+            try {
+                val response: HttpResponse = httpClient.get(
+                    UpasthitiUtils.BASE_URL + UpasthitiUtils.UPDATE_ENDPOINT
+                )
+                val updateData: Update = response.body()
+                
+                if (updateData.latestVersionCode > UpasthitiUtils.appVersionCode) {
+                    KToast.show(
+                        context,
+                        "🎉 New update available: ${updateData.latestVersionName}! Opening releases page...",
+                        Toast.LENGTH_LONG
+                    )
+                    try {
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            "https://github.com/kanha321/Upastithi/releases".toUri()
+                        )
+                        context.startActivity(intent)
+                    } catch (_: Exception) { }
+                } else if (updateData.latestVersionCode > 0) {
+                    KToast.show(
+                        context,
+                        "You are on the latest version (${UpasthitiUtils.appVersionName ?: "v3.0.0"})"
+                    )
+                } else {
+                    KToast.show(
+                        context,
+                        "Unable to check for updates. Check your internet connection."
+                    )
+                }
+            } catch (e: Exception) {
+                KToast.show(
+                    context,
+                    "Unable to check for updates: ${e.localizedMessage ?: "Network error"}"
+                )
+            } finally {
+                isCheckingUpdate = false
+            }
+        }
+    }
+
+    fun getAboutItems(context: Context): List<SettingItems> {
+        val items = mutableListOf<SettingItems>()
+
+        // Check for Updates
+        items.add(
+            SettingItems(
+                id = "check_updates",
+                title = "Check for Updates",
+                description = "Current version: ${UpasthitiUtils.appVersionName ?: "v3.0.0"} (Code ${UpasthitiUtils.appVersionCode})",
+                icon = Icons.Outlined.SystemUpdate,
+                widget = {
+                    if (isCheckingUpdate) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.Refresh,
+                            contentDescription = "Check for Updates",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                onClick = {
+                    checkUpdateManual(context)
+                }
+            )
+        )
+
+        // Developer Profile
+        items.add(
+            SettingItems(
+                id = "developer_github",
+                title = "Developer Profile",
+                description = "Visit Kanha's GitHub profile",
+                icon = Icons.Outlined.Person,
+                widget = {
+                    Icon(
+                        imageVector = Icons.Outlined.OpenInNew,
+                        contentDescription = "Open Link",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    try {
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            "https://github.com/kanha321".toUri()
+                        )
+                        context.startActivity(intent)
+                    } catch (_: Exception) { }
+                }
+            )
+        )
+
+        // Upasthiti Repository
+        items.add(
+            SettingItems(
+                id = "upasthiti_repo",
+                title = "Upasthiti Repository",
+                description = "View source code & releases on GitHub",
+                icon = Icons.Outlined.Code,
+                widget = {
+                    Icon(
+                        imageVector = Icons.Outlined.OpenInNew,
+                        contentDescription = "Open Link",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    try {
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            "https://github.com/kanha321/Upastithi".toUri()
+                        )
+                        context.startActivity(intent)
+                    } catch (_: Exception) { }
+                }
+            )
+        )
+
         return items
     }
 }

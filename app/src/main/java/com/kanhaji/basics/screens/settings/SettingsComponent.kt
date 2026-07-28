@@ -33,19 +33,30 @@ import com.kanhaji.basics.screens.settings.components.colorToHex
 import com.kanhaji.basics.theme.ThemeManager
 import kotlinx.coroutines.launch
 
+import androidx.compose.ui.platform.LocalContext
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsComponent() {
     // Make the settings list reactive to state changes
     val navigator = LocalNavigator.currentOrThrow
+    val context = LocalContext.current
+
     val settingItems by remember {
         derivedStateOf { SettingsScreenModel.getSettingItems() }
+    }
+    val aboutItems by remember {
+        derivedStateOf { SettingsScreenModel.getAboutItems(context) }
     }
     val listState = rememberLazyListState()
 
     val settingsGroup = Group(
         header = "Themes",
         items = settingItems
+    )
+    val aboutGroup = Group(
+        header = "About & Community",
+        items = aboutItems
     )
 
     Scaffold(
@@ -75,7 +86,7 @@ fun SettingsComponent() {
             .fillMaxSize()
     ) { innerPadding ->
         GroupedLazyColumn(
-            groups = listOf(settingsGroup),
+            groups = listOf(settingsGroup, aboutGroup),
             keySelector = { it.id },
             contentPadding = innerPadding,
             listState = listState,

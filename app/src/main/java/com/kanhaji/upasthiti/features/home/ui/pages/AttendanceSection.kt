@@ -24,6 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kanhaji.upasthiti.data.TimeTableManager
+import com.kanhaji.upasthiti.features.home.data.AttendanceMode
+import com.kanhaji.upasthiti.features.home.data.AttendanceStatus
+import com.kanhaji.upasthiti.features.home.data.AttendanceStorage
 import com.kanhaji.upasthiti.features.home.data.Subject
 import com.kanhaji.upasthiti.features.home.ui.HomeScreenModel
 import com.kanhaji.upasthiti.features.home.ui.components.SubjectAttendanceCard
@@ -94,19 +97,19 @@ fun AttendanceSection(
         } else {
             items(sortedSubjects, key = { it.subjectId.ifEmpty { it.displayName } }) { subject ->
                 var currentMode by remember(subject) {
-                    mutableStateOf(com.kanhaji.upasthiti.features.home.data.AttendanceStorage.getSubjectAttendanceMode(subject))
+                    mutableStateOf(AttendanceStorage.getSubjectAttendanceMode(subject))
                 }
 
                 val attendances = remember(subject) {
-                    com.kanhaji.upasthiti.features.home.data.AttendanceStorage.getAttendancesForSubject(subject)
+                    AttendanceStorage.getAttendancesForSubject(subject)
                 }
 
                 val (attendedCount, totalCount, percentage) = remember(attendances, currentMode) {
-                    if (currentMode == com.kanhaji.upasthiti.features.home.data.AttendanceMode.PER_SLOT) {
+                    if (currentMode == AttendanceMode.PER_SLOT) {
                         val total = attendances.size
                         val attended = attendances.count { 
-                            it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PRESENT || 
-                            it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PROXY
+                            it.attendanceStatus == AttendanceStatus.PRESENT || 
+                            it.attendanceStatus == AttendanceStatus.PROXY
                         }
                         val pct = if (total == 0) 0f else (attended.toFloat() / total.toFloat()) * 100f
                         Triple(attended, total, pct)
@@ -116,8 +119,8 @@ fun AttendanceSection(
                         val totalDays = groupedByDate.size
                         val attendedDays = groupedByDate.count { (_, slotsOnDate) ->
                             slotsOnDate.any { 
-                                it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PRESENT || 
-                                it.attendanceStatus == com.kanhaji.upasthiti.features.home.data.AttendanceStatus.PROXY
+                                it.attendanceStatus == AttendanceStatus.PRESENT || 
+                                it.attendanceStatus == AttendanceStatus.PROXY
                             }
                         }
                         val pct = if (totalDays == 0) 0f else (attendedDays.toFloat() / totalDays.toFloat()) * 100f
@@ -132,7 +135,7 @@ fun AttendanceSection(
                     percentage = percentage,
                     attendanceMode = currentMode,
                     onToggleMode = {
-                        currentMode = com.kanhaji.upasthiti.features.home.data.AttendanceStorage.toggleSubjectAttendanceMode(subject)
+                        currentMode = AttendanceStorage.toggleSubjectAttendanceMode(subject)
                     }
                 )
             }
