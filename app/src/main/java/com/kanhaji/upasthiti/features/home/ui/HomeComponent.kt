@@ -46,6 +46,7 @@ import com.kanhaji.upasthiti.features.home.ui.components.ShareExportBottomSheet
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -72,6 +73,7 @@ fun HomeComponent(
     var showShareBottomSheet by remember { mutableStateOf(false) }
     var showUninstallDialog by remember { mutableStateOf(false) }
     var showAttendanceHelpDialog by remember { mutableStateOf(false) }
+    var showTimetableHelpDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (!UpasthitiUtils.updateChecked)
@@ -126,13 +128,17 @@ fun HomeComponent(
                             contentDescription = "Share & Export"
                         )
                     }
-                    AnimatedVisibility(pagerState.currentPage == 1) {
+                    AnimatedVisibility(pagerState.currentPage == 1 || pagerState.currentPage == 2) {
                         IconButton(onClick = {
-                            showAttendanceHelpDialog = true
+                            if (pagerState.currentPage == 1) {
+                                showAttendanceHelpDialog = true
+                            } else if (pagerState.currentPage == 2) {
+                                showTimetableHelpDialog = true
+                            }
                         }) {
                             Icon(
                                 imageVector = Icons.Outlined.HelpOutline,
-                                contentDescription = "Attendance Help"
+                                contentDescription = "Help"
                             )
                         }
                     }
@@ -146,6 +152,92 @@ fun HomeComponent(
         if (showShareBottomSheet) {
             ShareExportBottomSheet(
                 onDismiss = { showShareBottomSheet = false }
+            )
+        }
+
+        if (showTimetableHelpDialog) {
+            AlertDialog(
+                onDismissRequest = { showTimetableHelpDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.HelpOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        text = "Timetable & Class Options",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "✏️ Editing Classes",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Tap on any class card to edit course codes, course titles, venues, timings, or faculty names.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "↔️ Shifting Classes",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Tap the shift action on any class card to temporarily move a lecture or lab to a different time slot or date.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "➕ Adding Extra Classes",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Tap the Add Class button to insert makeup lectures or extra class slots into your schedule.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Text(
+                            text = "💡 Tip: You can reset all edits anytime using 'Reset Timetable' to restore your original PDF baseline.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showTimetableHelpDialog = false },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Got It")
+                    }
+                }
             )
         }
 
@@ -167,7 +259,9 @@ fun HomeComponent(
                         text = "Attendance Modes",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 text = {
@@ -237,7 +331,9 @@ fun HomeComponent(
                         text = "Uninstall Old App Version",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 text = {

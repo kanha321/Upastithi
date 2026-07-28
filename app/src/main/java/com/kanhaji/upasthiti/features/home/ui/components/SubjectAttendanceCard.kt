@@ -35,6 +35,8 @@ import com.kanhaji.upasthiti.features.home.data.AttendanceMode
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.runtime.CompositionLocalProvider
 
 @Composable
 fun SubjectAttendanceCard(
@@ -223,29 +225,31 @@ fun SubjectAttendanceCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // Interactive Attendance Mode Toggle Chip (Per Slot vs Per Day)
-                        Surface(
-                            onClick = onToggleMode,
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(3.dp)
+                        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                            Surface(
+                                onClick = onToggleMode,
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Tune,
-                                    contentDescription = "Toggle Attendance Mode",
-                                    modifier = Modifier.size(11.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = if (attendanceMode == AttendanceMode.PER_DAY) "Day" else "Slot",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Tune,
+                                        contentDescription = "Toggle Attendance Mode",
+                                        modifier = Modifier.size(11.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = if (attendanceMode == AttendanceMode.PER_DAY) "Day" else "Slot",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
 
