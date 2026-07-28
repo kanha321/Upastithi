@@ -189,11 +189,13 @@ fun SplashComponent() {
                     val repository = TimetableRepositoryImpl()
                     val modifiedJson = TimeTableManager.loadModifiedTimetableJson(context)
                     if (modifiedJson != null) {
-                        repository.setParsedTimetable(modifiedJson, "modified_timetable.json", 0)
+                        val stamped = TimeTableManager.stampTimetableId(modifiedJson)
+                        repository.setParsedTimetable(stamped, "modified_timetable.json", stamped.pageIndex)
                     } else {
                         val originalJson = TimeTableManager.loadOriginalTimetableJson(context)
                         if (originalJson != null) {
-                            repository.setParsedTimetable(originalJson, "original_timetable.json", 0)
+                            val stamped = TimeTableManager.stampTimetableId(originalJson)
+                            repository.setParsedTimetable(stamped, "original_timetable.json", stamped.pageIndex)
                         } else if (hasStoredPdf) {
                             val savedName = PrefsManager.getString("last_pdf_name") ?: "saved_timetable.pdf"
                             val savedPageIdx = PrefsManager.getInt("last_page_index") ?: 0

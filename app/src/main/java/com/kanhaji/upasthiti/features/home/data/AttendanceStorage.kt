@@ -18,12 +18,16 @@ import java.util.UUID
 
 import com.kanhaji.basics.datastore.PrefsManager
 
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.flatMapLatest
+
 object AttendanceStorage {
 
     private val modeMap = mutableMapOf<String, AttendanceMode>()
 
     fun getSubjectAttendanceMode(subject: Subject): AttendanceMode {
-        val key = subject.subjectId.ifEmpty { subject.displayName }
+        val ttId = TimeTableManager.getTimetableId()
+        val key = "${ttId}_${subject.subjectId.ifEmpty { subject.displayName }}"
         return modeMap[key] ?: run {
             val saved = runBlocking(Dispatchers.IO) { PrefsManager.getString("att_mode_$key") }
             val mode = if (saved == AttendanceMode.PER_DAY.name) AttendanceMode.PER_DAY else AttendanceMode.PER_SLOT
@@ -33,7 +37,8 @@ object AttendanceStorage {
     }
 
     fun toggleSubjectAttendanceMode(subject: Subject): AttendanceMode {
-        val key = subject.subjectId.ifEmpty { subject.displayName }
+        val ttId = TimeTableManager.getTimetableId()
+        val key = "${ttId}_${subject.subjectId.ifEmpty { subject.displayName }}"
         val current = getSubjectAttendanceMode(subject)
         val next = if (current == AttendanceMode.PER_SLOT) AttendanceMode.PER_DAY else AttendanceMode.PER_SLOT
         modeMap[key] = next
@@ -47,18 +52,21 @@ object AttendanceStorage {
         return UpasthitiDatabase.getInstance(context).attendanceDao()
     }
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     fun getAttendanceFlow(context: Context = AndroidContext.appContext): Flow<Map<LocalDate, List<AttendanceEntity>>> {
-        val timetableId = TimeTableManager.getTimetableId()
-        return getDao(context).getAllAttendancesForTimetable(timetableId).map { roomList ->
-            roomList.map { it.toDomainEntity() }.groupBy { it.date }
-        }
+        return snapshotFlow { TimeTableManager.getTimetableId() }
+            .flatMapLatest { timetableId ->
+                getDao(context).getAllAttendancesForTimetable(timetableId).map { roomList ->
+                    roomList.map { it.toDomainEntity() }.groupBy { it.date }
+                }
+            }
     }
 
-    fun addAttendance(context: Context, attendance: AttendanceEntity) {
+    suspend fun addAttendance(context: Context, attendance: AttendanceEntity) {
         val dao = getDao(context)
         val timetableId = attendance.timetableId.ifEmpty { TimeTableManager.getTimetableId() }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        kotlinx.coroutines.withContext(Dispatchers.IO) {
             if (attendance.attendanceStatus == null) {
                 dao.deleteAttendanceSlot(
                     timetableId = timetableId,
@@ -107,7 +115,7 @@ object AttendanceStorage {
         val timetableId = TimeTableManager.getTimetableId()
         return runBlocking(Dispatchers.IO) {
             val all = getDao(context).getAllAttendancesDirect()
-                .filter { it.timetableId == timetableId || (it.timetableId.isEmpty() && timetableId == "default") }
+                .filter { it.timetableId == timetableId }
                 .map { it.toDomainEntity() }
             all.groupBy { it.date }
         }

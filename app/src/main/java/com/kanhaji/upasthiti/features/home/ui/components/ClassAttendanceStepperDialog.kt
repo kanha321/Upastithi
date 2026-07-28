@@ -191,7 +191,8 @@ fun ClassAttendanceStepperDialog(
                                             selectedClass = classes[index]
                                             val classAttendance = screenModel.getAttendanceForClass(
                                                 date = date,
-                                                time = classes[index].time
+                                                time = classes[index].time,
+                                                subjectId = classes[index].subject.subjectId
                                             )
                                             selectedAttendance = classAttendance?.attendanceStatus
                                             step = 1

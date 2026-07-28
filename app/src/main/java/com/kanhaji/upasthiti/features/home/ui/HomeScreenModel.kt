@@ -11,6 +11,7 @@ import com.kanhaji.basics.entity.Update
 import com.kanhaji.basics.networking.httpClient
 import com.kanhaji.basics.util.Updater.update
 import com.kanhaji.upasthiti.AndroidContext
+import com.kanhaji.upasthiti.data.TimeTableManager
 import com.kanhaji.upasthiti.features.home.data.AttendanceStatus
 import com.kanhaji.upasthiti.features.home.data.AttendanceStorage
 import com.kanhaji.upasthiti.features.home.data.Subject
@@ -40,9 +41,12 @@ class HomeScreenModel(
 
     init {
         screenModelScope.launch {
-            val repository = TimetableRepositoryImpl()
-            val overrides = repository.getClassShiftOverridesDirect()
-            com.kanhaji.upasthiti.data.TimeTableManager.setClassShiftOverrides(overrides)
+            androidx.compose.runtime.snapshotFlow { com.kanhaji.upasthiti.data.TimeTableManager.activeTimetableData }
+                .collect {
+                    val repository = TimetableRepositoryImpl()
+                    val overrides = repository.getClassShiftOverridesDirect()
+                    com.kanhaji.upasthiti.data.TimeTableManager.setClassShiftOverrides(overrides)
+                }
         }
         screenModelScope.launch {
             AttendanceStorage.getAttendanceFlow().collect { map ->
@@ -115,8 +119,16 @@ class HomeScreenModel(
         return attendanceByDate[date] ?: emptyList()
     }
 
-    fun getAttendanceForClass(date: LocalDate, time: String): AttendanceEntity? {
-        return getAttendanceForDate(date).firstOrNull { it.time == time }
+    fun getAttendanceForClass(date: LocalDate, time: String, subjectId: String? = null): AttendanceEntity? {
+        val list = getAttendanceForDate(date)
+        return if (subjectId != null) {
+            list.firstOrNull { 
+                it.time == time && 
+                it.subject.subjectId.equals(subjectId, ignoreCase = true)
+            }
+        } else {
+            list.firstOrNull { it.time == time }
+        }
     }
 
     fun getAttendancesForSubject(subject: Subject): Pair<String, Double> {
@@ -128,8 +140,10 @@ class HomeScreenModel(
         attendancesForDate: List<AttendanceEntity>,
         defaultColor: Color
     ): Color {
-        return attendancesForDate.firstOrNull { it.time == classEntity.time }
-            ?.attendanceStatus?.color ?: defaultColor
+        return attendancesForDate.firstOrNull { 
+            it.time == classEntity.time && 
+            it.subject.subjectId.equals(classEntity.subject.subjectId, ignoreCase = true)
+        }?.attendanceStatus?.color ?: defaultColor
     }
 
     suspend fun getLatestVersion(): Update {

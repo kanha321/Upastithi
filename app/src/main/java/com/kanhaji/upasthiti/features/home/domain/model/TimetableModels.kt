@@ -46,5 +46,8 @@ data class TimetableData(
     val schedule: List<ScheduleEvent> = emptyList(),
     val source: TimetableSource = TimetableSource.PDF_PARSED,
     val is_modified: Boolean = false,   // false = Original baseline, true = Modified by user/author
-    val modified_by_author: Boolean = false // true if imported timetable was already modified by the sharing author
+    val modified_by_author: Boolean = false, // true if imported timetable was already modified by the sharing author
+    val pdfHash: String = "",
+    val pageIndex: Int = 0,
+    val storedTimetableId: String = "" // Persistent ID — computed once, carried forever
 )

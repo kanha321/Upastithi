@@ -84,8 +84,11 @@ class TimetableRepositoryImpl(
 
     override suspend fun setParsedTimetable(data: TimetableData, name: String, pageIndex: Int) {
         withContext(Dispatchers.IO) {
-            val timetableId = (name + pageIndex + data.semester + data.schedule.size).hashCode().toString()
+            val timetableId = TimeTableManager.getTimetableId(data)
             metadataDao.deactivateAll()
+
+            // Automatically migrate any legacy unassigned attendance records to this active timetable ID
+            db.attendanceDao().migrateUnassignedAttendances(timetableId)
 
             val metadata = TimetableMetadataEntity(
                 id = timetableId,

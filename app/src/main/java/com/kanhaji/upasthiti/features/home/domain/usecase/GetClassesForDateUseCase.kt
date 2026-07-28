@@ -18,7 +18,10 @@ class GetClassesForDateUseCase(
         val markedAttendances = attendanceRepository.getAttendanceForDate(date)
 
         classes.map { classItem ->
-            val status = markedAttendances.find { it.time == classItem.time }?.attendanceStatus
+            val status = markedAttendances.find { 
+                it.time == classItem.time &&
+                it.subject.subjectId.equals(classItem.subject.subjectId, ignoreCase = true)
+            }?.attendanceStatus
             classItem.copy(attendanceStatus = status)
         }.sortedBy { it.startTime }
     }

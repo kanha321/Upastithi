@@ -224,6 +224,16 @@ object LocalPdfParser {
         return timetables
     }
 
+    fun calculateSha256(bytes: ByteArray): String {
+        return try {
+            val digest = java.security.MessageDigest.getInstance("SHA-256")
+            val hashBytes = digest.digest(bytes)
+            hashBytes.joinToString("") { "%02x".format(it) }.take(16)
+        } catch (e: Exception) {
+            bytes.contentHashCode().toString()
+        }
+    }
+
     fun parseTimetablePage(fileBytes: ByteArray, pageIdx: Int): TimetableData {
         Log.d(TAG, "parseTimetablePage: Starting offline parse for page index: $pageIdx")
         try {
@@ -629,12 +639,17 @@ object LocalPdfParser {
                     )
                 )
 
-                return TimetableData(
+                val pdfHash = calculateSha256(fileBytes)
+
+                val unstamped = TimetableData(
                     semester = semesterName,
                     faculty = facultyMap,
                     courses = courses,
-                    schedule = sortedSchedule
+                    schedule = sortedSchedule,
+                    pdfHash = pdfHash,
+                    pageIndex = pageIdx
                 )
+                return TimeTableManager.stampTimetableId(unstamped)
             }
         } catch (e: Exception) {
             Log.e(TAG, "parseTimetablePage failed: ${e.message}", e)

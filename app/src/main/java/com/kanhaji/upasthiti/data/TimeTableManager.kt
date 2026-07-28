@@ -40,60 +40,101 @@ object TimeTableManager {
         encodeDefaults = true
     }
 
-    fun getTimetableId(): String {
-        val data = activeTimetableData ?: return "default"
-        val scheduleStr = data.schedule.joinToString("|") { "${it.day}_${it.time}_${it.course_code}" }
-        val coursesStr = data.courses.joinToString("|") { "${it.code}_${it.name}" }
-        return (scheduleStr + coursesStr).hashCode().toString()
+    fun getTimetableId(data: TimetableData? = activeTimetableData): String {
+        val target = data ?: activeTimetableData ?: return "default"
+        // Priority 1: Persistent stored ID (single source of truth)
+        if (target.storedTimetableId.isNotBlank()) {
+            return target.storedTimetableId
+        }
+        // Priority 2: Compute from pdfHash + pageIndex + semester
+        val semClean = target.semester.lowercase().trim().replace(Regex("[^a-zA-Z0-9_]"), "_").take(15)
+        if (target.pdfHash.isNotBlank()) {
+            return "${target.pdfHash}_p${target.pageIndex}_$semClean"
+        }
+        // Priority 3: Fallback hash from schedule content (legacy/imported data)
+        val scheduleStr = target.schedule.joinToString("|") { "${it.day}_${it.time}_${it.course_code}_${it.group}" }
+        val coursesStr = target.courses.joinToString("|") { "${it.code}_${it.name}" }
+        val combinedHash = (scheduleStr + coursesStr + semClean).hashCode().toString()
+        return if (semClean.isNotBlank()) {
+            "${semClean}_$combinedHash"
+        } else {
+            "tt_$combinedHash"
+        }
+    }
+
+    /**
+     * Stamps a persistent timetableId onto TimetableData if it doesn't already have one.
+     * This ID is computed once and carried forever through all save/load/edit cycles.
+     */
+    fun stampTimetableId(data: TimetableData): TimetableData {
+        if (data.storedTimetableId.isNotBlank()) return data
+        val id = getTimetableId(data)
+        return data.copy(storedTimetableId = id)
     }
 
     fun saveOriginalTimetableJson(data: TimetableData, context: Context) {
         try {
-            val file = File(context.filesDir, "original_timetable.json")
+            val id = getTimetableId(data)
+            val file = File(context.filesDir, "original_timetable_$id.json")
             val baseData = data.copy(
                 source = data.source,
                 is_modified = false
             )
             val jsonString = json.encodeToString(baseData)
             file.writeText(jsonString)
+            File(context.filesDir, "original_timetable.json").writeText(jsonString)
         } catch (e: Exception) {
-            Log.e("TimeTableManager", "Failed to save original_timetable.json: ${e.message}")
+            Log.e("TimeTableManager", "Failed to save original_timetable: ${e.message}")
         }
     }
 
-    fun loadOriginalTimetableJson(context: Context): TimetableData? {
+    fun loadOriginalTimetableJson(context: Context, timetableId: String? = null): TimetableData? {
         try {
-            val file = File(context.filesDir, "original_timetable.json")
-            if (file.exists()) {
-                val jsonString = file.readText()
+            val id = timetableId ?: getTimetableId()
+            val specificFile = File(context.filesDir, "original_timetable_$id.json")
+            if (specificFile.exists()) {
+                val jsonString = specificFile.readText()
+                return json.decodeFromString<TimetableData>(jsonString)
+            }
+            val fallbackFile = File(context.filesDir, "original_timetable.json")
+            if (fallbackFile.exists()) {
+                val jsonString = fallbackFile.readText()
                 return json.decodeFromString<TimetableData>(jsonString)
             }
         } catch (e: Exception) {
-            Log.e("TimeTableManager", "Failed to load original_timetable.json: ${e.message}")
+            Log.e("TimeTableManager", "Failed to load original_timetable: ${e.message}")
         }
         return null
     }
 
     fun saveModifiedTimetableJson(data: TimetableData, context: Context) {
         try {
-            val file = File(context.filesDir, "modified_timetable.json")
+            val id = getTimetableId(data)
+            val file = File(context.filesDir, "modified_timetable_$id.json")
             val modifiedData = data.copy(is_modified = true)
             val jsonString = json.encodeToString(modifiedData)
             file.writeText(jsonString)
+            File(context.filesDir, "modified_timetable.json").writeText(jsonString)
         } catch (e: Exception) {
-            Log.e("TimeTableManager", "Failed to save modified_timetable.json: ${e.message}")
+            Log.e("TimeTableManager", "Failed to save modified_timetable: ${e.message}")
         }
     }
 
-    fun loadModifiedTimetableJson(context: Context): TimetableData? {
+    fun loadModifiedTimetableJson(context: Context, timetableId: String? = null): TimetableData? {
         try {
-            val file = File(context.filesDir, "modified_timetable.json")
-            if (file.exists()) {
-                val jsonString = file.readText()
+            val id = timetableId ?: getTimetableId()
+            val specificFile = File(context.filesDir, "modified_timetable_$id.json")
+            if (specificFile.exists()) {
+                val jsonString = specificFile.readText()
+                return json.decodeFromString<TimetableData>(jsonString)
+            }
+            val fallbackFile = File(context.filesDir, "modified_timetable.json")
+            if (fallbackFile.exists()) {
+                val jsonString = fallbackFile.readText()
                 return json.decodeFromString<TimetableData>(jsonString)
             }
         } catch (e: Exception) {
-            Log.e("TimeTableManager", "Failed to load modified_timetable.json: ${e.message}")
+            Log.e("TimeTableManager", "Failed to load modified_timetable: ${e.message}")
         }
         return null
     }
@@ -101,11 +142,11 @@ object TimeTableManager {
     fun importTimetableJson(jsonString: String, context: Context): TimetableData {
         val imported = json.decodeFromString<TimetableData>(jsonString)
         val wasModifiedByAuthor = imported.is_modified || imported.modified_by_author
-        val importedBase = imported.copy(
+        val importedBase = stampTimetableId(imported.copy(
             source = TimetableSource.IMPORTED,
             is_modified = false,
             modified_by_author = wasModifiedByAuthor
-        )
+        ))
         clearModifiedTimetableJson(context)
         saveOriginalTimetableJson(importedBase, context)
         setParsedTimetable(importedBase, context)
@@ -136,15 +177,17 @@ object TimeTableManager {
     }
 
     fun setParsedTimetable(data: TimetableData?, context: Context? = null) {
-        if (data != null && context != null) {
-            saveOriginalTimetableJson(data, context)
+        val stamped = if (data != null) stampTimetableId(data) else null
+        if (stamped != null && context != null) {
+            saveOriginalTimetableJson(stamped, context)
         }
         val modifiedData = context?.let { loadModifiedTimetableJson(it) }
         if (modifiedData != null) {
-            activeTimetableData = modifiedData
+            val stampedMod = stampTimetableId(modifiedData)
+            activeTimetableData = stampedMod
             hasManualEdits = true
         } else {
-            activeTimetableData = data
+            activeTimetableData = stamped
             hasManualEdits = false
         }
         classShiftOverrides.clear()

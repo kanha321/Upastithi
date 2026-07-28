@@ -2,30 +2,44 @@
 
 ---
 
-## [3.0.0] - 07:35 PM / 23 July 2026
+## [3.0.0] - 01:15 AM / 29 July 2026
 
-### Universal Timetable Engine & Architecture Overhaul
+### Major Version 3.0 Release & Architecture Overhaul
+
+- **Package Name Corrective Refactoring (`com.kanhaji.upasthiti`)**:
+  - Corrected application ID and namespace to `com.kanhaji.upasthiti`.
+  - Refactored full codebase package structure across 70+ source files.
+
+- **Legacy App Detection & Automated Uninstaller**:
+  - Added Android package visibility `<queries>` and uninstallation prompt.
+  - Automatically detects if the legacy app (`com.kanhaji.upastithi`) is installed 1 second post-launch and provides a 1-tap uninstall dialog.
+
+- **Per-Subject Attendance Modes (`⚙ Slot` vs `⚙ Day`)**:
+  - Added mode toggle chips (`⚙ Slot` / `⚙ Day`) on subject attendance cards.
+  - **Per-Slot Mode**: Standard slot-by-slot attendance percentage calculation.
+  - **Per-Day Mode (Lenient Option A)**: Groups slots by date, counting a date as Present if at least 1 slot on that date was marked Present or Proxy.
+  - Saves preferences independently per subject in DataStore.
 
 - **Universal Dynamic Timetable Parser**:
-  - Replaced hardcoded timetables and static subjects with a 100% dynamic, on-device PDF grid timetable parser supporting B.Tech, MCA, MBA, M.Tech, and all academic branches.
+  - 100% on-device PDF grid timetable parser supporting B.Tech, MCA, MBA, M.Tech, and all academic branches.
   - Automatically extracts courses, section schedules, locations, and faculty metadata directly from uploaded PDFs.
 
-- **Material 3 Expressive UI & Custom Controls**:
+- **Scroll-Aware Auto-Hiding Bottom Navigation**:
+  - Attached `NestedScrollConnection` to main list views.
+  - Smoothly hides the `FloatingSpringBottomBar` via slide-down animation on downward scroll and restores via slide-up animation on upward scroll or tab switch.
+
+- **Contextual Help Icons & Centered Dialogs**:
+  - Anchored top app bar help (`?`) icon for Attendance and Timetable screens without tab-switch animation jitter.
+  - Material 3 explanation dialogs with centered headers explaining attendance calculation modes, shifting classes, and timetable editing.
+
+- **About & Community Settings**:
+  - Integrated **Check for Updates** in Settings that verifies the latest release and opens the GitHub Releases page directly.
+  - Added 1-tap direct links for **Developer Profile** and **Upasthiti Repository**.
+
+- **Material 3 Expressive UI & Real-Time Collision Guard**:
   - Upgraded Compose Material 3 library to stable `1.4.0` with Material 3 Expressive APIs.
-  - Integrated interactive 2-step **M3 Clock Dial (`TimePicker`)** that automatically transitions from Start Time selection to End Time.
-  - Built custom `KTextField` with smooth focus animations, pill-shaped containers, and read-only support matching the app theme.
-  - Added interactive Material 3 Surface Timing Cards with quick-change assist chips.
-
-- **Real-Time Time Slot Collision Prevention**:
-  - Implemented real-time interval intersection detection ($\max(S_1, S_2) < \min(E_1, E_2)$) when adding or editing classes.
-  - Added a dynamic **Conflict Alert Banner** displaying the full conflicting subject name and time slot.
-  - Automatically disables saving whenever a time conflict is active.
-
-- **Architecture & Motion Enhancements**:
-  - Refactored project codebase into Clean Architecture feature packages (`features/home/ui/`, `features/home/domain/model/`, `features/home/data/`).
-  - Integrated KernelSU-inspired spring tab transition animations and RankPredictorAdmin-inspired `FloatingSpringBottomBar`.
-  - Added an interactive Material 3 Empty State card in the Attendance section when no timetable is loaded.
-  - Fixed pre-composition state guards in `HorizontalPager` to eliminate flash/glitch during swipe transitions between Attendance and Timetable pages.
+  - Integrated 2-step **M3 Clock Dial (`TimePicker`)** for start/end time selection.
+  - Built real-time interval intersection detection ($\max(S_1, S_2) < \min(E_1, E_2)$) when adding or editing classes with conflict warning banners.
 
 ---
 
@@ -136,13 +150,3 @@
 - Subject-wise attendance tracking
 - Attendance percentage calculation per subject
 - Simple and intuitive user interface
-
-**Future Plans:**
-- Better UI/UX design
-- Custom Time Table Support
-- Improved data visualization
-- Data export options (CSV, JSON, maybe more)
-- Material You wallpaper-based colors
-- Customizable themes
-
----

@@ -66,7 +66,9 @@ fun MultiDotIndicator(
         .sortedBy { parseStartMinutes(it.time) }
         .map { classEntity ->
             val attendance = allAttendances.firstOrNull {
-                it.time == classEntity.time && it.attendanceStatus != null
+                it.time == classEntity.time &&
+                it.subject.subjectId.equals(classEntity.subject.subjectId, ignoreCase = true) &&
+                it.attendanceStatus != null
             }
             if (attendance != null) {
                 val rawColor = attendance.attendanceStatus!!.color

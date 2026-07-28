@@ -167,11 +167,8 @@ fun TimetableSection(
     }
     val pagerState = rememberPagerState(initialPage = initialDayIndex, pageCount = { daysList.size })
 
-    LaunchedEffect(timetableData) {
-        if (timetableData != null && !TimeTableManager.isCustomized) {
-            TimeTableManager.setParsedTimetable(timetableData)
-        }
-    }
+    // Note: LaunchedEffect(timetableData) was removed — all code paths that set
+    // timetableData now explicitly call repository.setParsedTimetable() first.
 
     LaunchedEffect(timetableData, currentSelectedPageIndex) {
         if (timetableData != null) {
@@ -250,7 +247,11 @@ fun TimetableSection(
                     currentSelectedPageIndex = pageIdx
                     val parsed = LocalPdfParser.parseTimetablePage(bytes, pageIdx)
                     originalPdfData = parsed
-                    timetableData = parsed
+
+                    val repository = TimetableRepositoryImpl()
+                    repository.setParsedTimetable(parsed, name, pageIdx)
+                    timetableData = TimeTableManager.activeTimetableData ?: parsed
+                    screenModel.refreshAttendance()
                 } else {
                     temporarySelectedPageIndex = 0
                     showSelectDialog = true
@@ -279,23 +280,25 @@ fun TimetableSection(
                             if (contentStr.contains("\"records\"") && contentStr.contains("\"exportDate\"")) {
                                 val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
                                 val attendanceExport = json.decodeFromString<com.kanhaji.upasthiti.features.home.ui.components.AttendanceExportData>(contentStr)
-                                attendanceExport.records.forEach { record ->
-                                    val entity = com.kanhaji.upasthiti.features.home.domain.model.AttendanceEntity(
-                                        timetableId = TimeTableManager.getTimetableId(),
-                                        date = kotlinx.datetime.LocalDate.parse(record.dateIso),
-                                        time = record.time,
-                                        subject = com.kanhaji.upasthiti.features.home.data.Subject(
-                                            displayName = record.courseName,
-                                            subjectId = record.courseCode,
-                                            teacher = "",
-                                            teacherInitials = ""
-                                        ),
-                                        attendanceStatus = AttendanceStatus.values().firstOrNull { it.name.equals(record.status, ignoreCase = true) }
-                                    )
-                                    AttendanceStorage.addAttendance(context, entity)
+                                coroutineScope.launch {
+                                    attendanceExport.records.forEach { record ->
+                                        val entity = com.kanhaji.upasthiti.features.home.domain.model.AttendanceEntity(
+                                            timetableId = TimeTableManager.getTimetableId(),
+                                            date = kotlinx.datetime.LocalDate.parse(record.dateIso),
+                                            time = record.time,
+                                            subject = com.kanhaji.upasthiti.features.home.data.Subject(
+                                                displayName = record.courseName,
+                                                subjectId = record.courseCode,
+                                                teacher = "",
+                                                teacherInitials = ""
+                                            ),
+                                            attendanceStatus = AttendanceStatus.values().firstOrNull { it.name.equals(record.status, ignoreCase = true) }
+                                        )
+                                        AttendanceStorage.addAttendance(context, entity)
+                                    }
+                                    screenModel.refreshAttendance()
+                                    KToast.show(context, "Successfully imported attendance data!")
                                 }
-                                screenModel.refreshAttendance()
-                                KToast.show(context, "Successfully imported attendance data!")
                             } else {
                                 val imported = TimeTableManager.importTimetableJson(contentStr, context)
                                 val repository = TimetableRepositoryImpl()
@@ -493,7 +496,11 @@ fun TimetableSection(
                         try {
                             val parsed = LocalPdfParser.parseTimetablePage(bytes, pageIdx)
                             originalPdfData = parsed
-                            timetableData = parsed
+
+                            val repository = TimetableRepositoryImpl()
+                            repository.setParsedTimetable(parsed, selectedFileName ?: "Timetable.pdf", pageIdx)
+                            timetableData = TimeTableManager.activeTimetableData ?: parsed
+                            screenModel.refreshAttendance()
                             isLoading = false
 
                             try {
