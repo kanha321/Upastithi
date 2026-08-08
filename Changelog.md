@@ -2,6 +2,50 @@
 
 ---
 
+## [3.1.0] - 04:04 AM / 09 August 2026
+
+### Vector-Grid PDF Parser Rewrite
+
+- **Vector-Line Grid Extraction (New Primary Parser)**:
+  - Replaced text-proximity heuristics with direct extraction of vector-drawn line segments from the PDF content stream via `PDFGraphicsStreamEngine`.
+  - Grid structure (rows, columns, merged cells) is now derived from actual drawn lines — the same lines visible in the PDF.
+  - Thin filled rectangles (common table border style, width < 3pt) are automatically decomposed into edge lines.
+  - Merged cell detection via missing interior dividers — accurately handles multi-hour labs of any duration.
+
+- **Eliminated All Hardcoded Pixel Thresholds**:
+  - Removed `targetSpan = 3` (assumed all labs are 3 hours) — lab duration now comes from actual cell column span.
+  - Removed `centerX < 390f` legend column split — replaced with dynamic largest-gap detection.
+  - Removed `DEFAULT_SLOT_CENTERS` (10 hardcoded X-coordinates) — column edges come from vector lines.
+  - Removed fixed Y-gap (`4.5f`) and X-gap (`3.5f`) thresholds — now computed from median character dimensions.
+  - Degenerate narrow columns (< 10pt, border artifacts) are automatically filtered.
+
+- **Improved Legend Parsing**:
+  - Faculty definition section (`RT: Dr. Name`) is now correctly separated from course entries, preventing the last course from absorbing all faculty initials.
+  - Subject → teacher mapping is the primary faculty lookup; cell-text scanning is fallback only.
+  - All known faculty initials are stripped from location text, not just the matched one.
+
+- **Robust Table Boundary Detection**:
+  - Table region boundary derived from the longest vertical border lines (outer table frame), preventing legend table rows from being included in the grid.
+
+- **PDF Page Preview State Persistence**:
+  - Fixed an issue where reopening the app or switching tabs reset the PDF preview card to page 0 instead of displaying the page corresponding to the active timetable (e.g. 5th Sem on page 2).
+  - Synchronized `currentSelectedPageIndex` state with `activeTimetableData.pageIndex` and `PrefsManager` across all app lifecycle events.
+
+- **Dedicated Target File Pickers (.pdf & .upasthiti)**:
+  - Updated the initial launch upload dialog to present two separate buttons for PDF timetables and `.upasthiti` backup files.
+  - Implemented Storage Access Framework `OpenDocument` contracts with targeted MIME-type filtering (`application/pdf` for PDFs and `application/json`, `application/octet-stream`, `text/plain` for `.upasthiti` backups) to hide irrelevant media files in the file picker.
+
+- **Text-Heuristic Fallback Preserved**:
+  - Original spatial-clustering parser retained as automatic fallback for PDFs without vector-drawn grid lines.
+
+- **Unified Help Dialogs**:
+  - Standardized top app bar `?` help dialogs across all tabs with attendance status color guides.
+
+- **Weekend & Holiday Dialog**:
+  - Added a dedicated holiday dialog for Saturday & Sunday with typewriter animated messages and wide block cursor.
+
+---
+
 ## [3.0.0] - 01:15 AM / 29 July 2026
 
 ### Major Version 3.0 Release & Architecture Overhaul

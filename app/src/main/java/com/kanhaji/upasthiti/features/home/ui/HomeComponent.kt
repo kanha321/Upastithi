@@ -84,6 +84,7 @@ fun HomeComponent(
     val context = LocalContext.current
     var showShareBottomSheet by remember { mutableStateOf(false) }
     var showUninstallDialog by remember { mutableStateOf(false) }
+    var showCalendarHelpDialog by remember { mutableStateOf(false) }
     var showAttendanceHelpDialog by remember { mutableStateOf(false) }
     var showTimetableHelpDialog by remember { mutableStateOf(false) }
     var isBottomBarVisible by remember { mutableStateOf(true) }
@@ -162,19 +163,17 @@ fun HomeComponent(
                             contentDescription = "Share & Export"
                         )
                     }
-                    AnimatedVisibility(pagerState.currentPage == 1 || pagerState.currentPage == 2) {
-                        IconButton(onClick = {
-                            if (pagerState.currentPage == 1) {
-                                showAttendanceHelpDialog = true
-                            } else if (pagerState.currentPage == 2) {
-                                showTimetableHelpDialog = true
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Outlined.HelpOutline,
-                                contentDescription = "Help"
-                            )
+                    IconButton(onClick = {
+                        when (pagerState.currentPage) {
+                            0 -> showCalendarHelpDialog = true
+                            1 -> showAttendanceHelpDialog = true
+                            2 -> showTimetableHelpDialog = true
                         }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Outlined.HelpOutline,
+                            contentDescription = "Help"
+                        )
                     }
                     AnimatedVisibility(screenModel.isUpdateAvailable && Updater.downloadProgress != 1f) {
                         UpdateButton()
@@ -267,6 +266,85 @@ fun HomeComponent(
                 confirmButton = {
                     Button(
                         onClick = { showTimetableHelpDialog = false },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Got It")
+                    }
+                }
+            )
+        }
+
+        if (showCalendarHelpDialog) {
+            AlertDialog(
+                onDismissRequest = { showCalendarHelpDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.HelpOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        text = "Calendar & Attendance",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "📅 Date Selection",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Tap any date on the calendar to view scheduled classes or mark attendance for that specific day.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "🎨 Attendance Status Indicators",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Colored dots under each date show status per class:\n• 🟢 Green = Present\n• 🔴 Red = Absent\n• 🟠 Orange = Proxy\n• 🔵 Blue = Leave\n• 🟤 Brown = Holiday\n• 🔘 Grey = Cancelled\n• ⭕ Outline = Unmarked",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = "📆 Navigation",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Swipe left/right to change months, or tap 'Today' to jump back to the current date.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showCalendarHelpDialog = false },
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text("Got It")
