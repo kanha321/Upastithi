@@ -51,6 +51,7 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
 
     var showUploadPromptDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
+    var showWeekendDialog by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedDayOfWeek by remember { mutableStateOf<DayOfWeek?>(null) }
     val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
@@ -69,7 +70,11 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
                     }
                     selectedDate = day.date.toKotlinLocalDate()
                     selectedDayOfWeek = day.date.dayOfWeek
-                    showDateDialog = true
+                    if (day.date.dayOfWeek == java.time.DayOfWeek.SATURDAY || day.date.dayOfWeek == java.time.DayOfWeek.SUNDAY) {
+                        showWeekendDialog = true
+                    } else {
+                        showDateDialog = true
+                    }
                     return@OutlinedCard
                 },
                 shape = if (day.date.toKotlinLocalDate() == today) {
@@ -233,5 +238,14 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
             showDateDialog = false
             dialogClasses = null
         }
+    }
+
+    if (showWeekendDialog && selectedDate != null) {
+        WeekendHolidayDialog(
+            date = selectedDate!!,
+            onDismiss = {
+                showWeekendDialog = false
+            }
+        )
     }
 }

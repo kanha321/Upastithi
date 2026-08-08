@@ -27,6 +27,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.ui.platform.LocalContext
 import com.kanhaji.basics.datastore.PrefsManager
 import com.kanhaji.upasthiti.data.LocalPdfParser
@@ -48,7 +49,7 @@ fun SplashComponent() {
     var isProcessingFile by remember { mutableStateOf(false) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
             isProcessingFile = true
@@ -292,7 +293,7 @@ fun SplashComponent() {
         if (showUploadDialog) {
             AlertDialog(
                 onDismissRequest = { },
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 icon = {
                     Icon(
@@ -311,19 +312,20 @@ fun SplashComponent() {
                     )
                 },
                 text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
                             text = "Upasthiti requires a timetable to show your daily classes and track attendance.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Please upload an official MNNIT MCA timetable PDF or an exported .upasthiti file.",
+                            text = "Choose a file type to get started:",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         if (isProcessingFile) {
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -335,14 +337,30 @@ fun SplashComponent() {
                     }
                 },
                 confirmButton = {
-                    Button(
-                        onClick = { filePickerLauncher.launch("*/*") },
-                        enabled = !isProcessingFile,
-                        shape = RoundedCornerShape(12.dp)
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Select File (.pdf / .upasthiti)")
+                        Button(
+                            onClick = { filePickerLauncher.launch(arrayOf("application/pdf")) },
+                            enabled = !isProcessingFile,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Select PDF Timetable (.pdf)")
+                        }
+                        OutlinedButton(
+                            onClick = { filePickerLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
+                            enabled = !isProcessingFile,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Select Upasthiti File (.upasthiti)")
+                        }
                     }
                 }
             )

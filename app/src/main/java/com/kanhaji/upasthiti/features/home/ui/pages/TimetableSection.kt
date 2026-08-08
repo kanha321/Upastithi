@@ -101,15 +101,21 @@ fun TimetableSection(
     var timetableData by remember { mutableStateOf<TimetableData?>(TimeTableManager.activeTimetableData) }
     var originalPdfData by remember { mutableStateOf<TimetableData?>(TimeTableManager.activeTimetableData) }
 
+    var currentSelectedPageIndex by remember {
+        mutableStateOf(TimeTableManager.activeTimetableData?.pageIndex ?: 0)
+    }
+
     LaunchedEffect(TimeTableManager.activeTimetableData) {
         timetableData = TimeTableManager.activeTimetableData
+        TimeTableManager.activeTimetableData?.pageIndex?.let { pageIdx ->
+            currentSelectedPageIndex = pageIdx
+        }
     }
 
     var showWarningDialog by remember { mutableStateOf(false) }
     var pendingFileBytes by remember { mutableStateOf<ByteArray?>(null) }
     var pendingFileName by remember { mutableStateOf<String?>(null) }
 
-    var currentSelectedPageIndex by remember { mutableStateOf(0) }
     var isPdfViewExpanded by remember { mutableStateOf(false) }
     var pdfPageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var showFullScreenPdfDialog by remember { mutableStateOf(false) }
@@ -203,8 +209,10 @@ fun TimetableSection(
 
     LaunchedEffect(Unit) {
         selectedFileName = PrefsManager.getString("last_pdf_name")
+        val savedPageIdx = PrefsManager.getInt("last_page_index") ?: 0
         if (TimeTableManager.activeTimetableData != null) {
             timetableData = TimeTableManager.activeTimetableData
+            currentSelectedPageIndex = TimeTableManager.activeTimetableData?.pageIndex ?: savedPageIdx
             return@LaunchedEffect
         }
         coroutineScope.launch {
@@ -245,6 +253,7 @@ fun TimetableSection(
                 } else if (detected.size == 1) {
                     val pageIdx = detected[0].page_index
                     currentSelectedPageIndex = pageIdx
+                    PrefsManager.saveInt("last_page_index", pageIdx)
                     val parsed = LocalPdfParser.parseTimetablePage(bytes, pageIdx)
                     originalPdfData = parsed
 
@@ -264,7 +273,7 @@ fun TimetableSection(
     }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
             val name = getFileName(context, uri)
@@ -372,7 +381,7 @@ fun TimetableSection(
             Spacer(modifier = Modifier.height(8.dp))
             TimetablePdfCard(
                 selectedFileName = selectedFileName,
-                onPickPdfClick = { filePickerLauncher.launch("application/pdf") },
+                onPickPdfClick = { filePickerLauncher.launch(arrayOf("application/pdf")) },
                 isCustomized = TimeTableManager.isCustomized,
                 onResetClick = { showResetDialog = true }
             )

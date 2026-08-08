@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ElevatedCard
@@ -156,8 +158,11 @@ fun CalendarSection(
             }
         }
         InfoNoteCard(
-            text = "Tap a date to view timetable or add attendance",
-            modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 90.dp)
+            text = "Tap the ? icon in the top app bar anytime for help",
+            icon = Icons.AutoMirrored.Outlined.HelpOutline,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 90.dp)
         )
     }
 }

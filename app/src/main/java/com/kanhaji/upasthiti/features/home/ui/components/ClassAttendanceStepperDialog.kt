@@ -128,8 +128,9 @@ fun ClassAttendanceStepperDialog(
                             .fillMaxWidth()
                             .padding(vertical = 12.dp)
                     ) {
-                        Text(
-                            text = UpasthitiUtils.noClassesMessages.random(),
+                        val randomMsg = remember(date) { UpasthitiUtils.noClassesMessages.random() }
+                        TypewriterText(
+                            text = randomMsg,
                             modifier = Modifier.padding(16.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
