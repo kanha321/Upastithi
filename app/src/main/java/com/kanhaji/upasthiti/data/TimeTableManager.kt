@@ -208,15 +208,17 @@ object TimeTableManager {
     ) {
         val current = activeTimetableData ?: return
 
-        // 1. Remove any conflicting shift override for this course code
+        // 1. Remove any conflicting shift override for this specific class
         classShiftOverrides.removeAll { override ->
-            override.courseCode.equals(originalEvent.course_code, ignoreCase = true) ||
-                    override.courseCode.equals(updatedEvent.course_code, ignoreCase = true)
+            (override.courseCode.equals(originalEvent.course_code, ignoreCase = true) &&
+                    override.originalTime.equals(originalEvent.time, ignoreCase = true)) ||
+                    (override.courseCode.equals(updatedEvent.course_code, ignoreCase = true) &&
+                    override.originalTime.equals(updatedEvent.time, ignoreCase = true))
         }
 
-        // 2. Match event by ID or course_code + day
+        // 2. Match event by ID or course_code + day + time
         val newSchedule = current.schedule.map { event ->
-            if (event.id == originalEvent.id || (event.course_code.equals(originalEvent.course_code, ignoreCase = true) && event.day.equals(originalEvent.day, ignoreCase = true))) {
+            if (event.id == originalEvent.id || (event.course_code.equals(originalEvent.course_code, ignoreCase = true) && event.day.equals(originalEvent.day, ignoreCase = true) && event.time.equals(originalEvent.time, ignoreCase = true))) {
                 updatedEvent
             } else {
                 event
