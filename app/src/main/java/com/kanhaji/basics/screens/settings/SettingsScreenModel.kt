@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Brightness4
 import androidx.compose.material.icons.outlined.Brightness5
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Colorize
@@ -52,6 +53,27 @@ object SettingsScreenModel : ScreenModel {
 
     var showColorPicker by mutableStateOf(false)
     var showThemeDialog by mutableStateOf(false)
+    var showSaturdayBottomSheet by mutableStateOf(false)
+
+    fun getAcademicItems(): List<SettingItems> {
+        val items = mutableListOf<SettingItems>()
+        val isSatEnabled = com.kanhaji.upasthiti.features.home.data.SaturdayScheduleManager.isEnabled
+        val satMode = com.kanhaji.upasthiti.features.home.data.SaturdayScheduleManager.mode
+        val desc = if (!isSatEnabled) "Disabled (Saturdays treated as weekend)"
+                   else if (satMode == com.kanhaji.upasthiti.features.home.data.SaturdayMode.AUTO) "Active • Auto Rotation (Mon ➔ Fri)"
+                   else "Active • Fixed Weekday"
+
+        items.add(
+            SettingItems(
+                id = "saturday_classes",
+                title = "Saturday Schedule",
+                description = desc,
+                icon = Icons.Outlined.CalendarMonth,
+                onClick = { showSaturdayBottomSheet = true }
+            )
+        )
+        return items
+    }
 
     private fun updateAmoledSetting(enabled: Boolean) {
         ThemeManager.isAmoled = enabled

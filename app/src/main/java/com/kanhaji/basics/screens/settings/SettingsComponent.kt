@@ -42,6 +42,9 @@ fun SettingsComponent() {
     val navigator = LocalNavigator.currentOrThrow
     val context = LocalContext.current
 
+    val academicItems by remember {
+        derivedStateOf { SettingsScreenModel.getAcademicItems() }
+    }
     val settingItems by remember {
         derivedStateOf { SettingsScreenModel.getSettingItems() }
     }
@@ -50,6 +53,10 @@ fun SettingsComponent() {
     }
     val listState = rememberLazyListState()
 
+    val academicGroup = Group(
+        header = "Schedule & Academics",
+        items = academicItems
+    )
     val settingsGroup = Group(
         header = "Themes",
         items = settingItems
@@ -86,7 +93,7 @@ fun SettingsComponent() {
             .fillMaxSize()
     ) { innerPadding ->
         GroupedLazyColumn(
-            groups = listOf(settingsGroup, aboutGroup),
+            groups = listOf(academicGroup, settingsGroup, aboutGroup),
             keySelector = { it.id },
             contentPadding = innerPadding,
             listState = listState,
@@ -124,6 +131,14 @@ fun SettingsComponent() {
                             colorToHex(color)
                         )
                     }
+                }
+            )
+        }
+
+        if (SettingsScreenModel.showSaturdayBottomSheet) {
+            com.kanhaji.upasthiti.features.home.ui.components.SaturdayScheduleBottomSheet(
+                onDismiss = {
+                    SettingsScreenModel.showSaturdayBottomSheet = false
                 }
             )
         }

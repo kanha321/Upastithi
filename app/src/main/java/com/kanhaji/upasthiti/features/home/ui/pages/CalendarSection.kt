@@ -39,11 +39,26 @@ import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.kanhaji.upasthiti.features.home.data.SaturdayScheduleManager
+import com.kanhaji.upasthiti.features.home.ui.components.SaturdayHideConfirmDialog
+import com.kanhaji.upasthiti.features.home.ui.components.SaturdayScheduleBottomSheet
+import com.kanhaji.upasthiti.features.home.ui.components.SaturdayScheduleCard
+
 @Composable
 fun CalendarSection(
     screenModel: HomeScreenModel
 ) {
     val scope = rememberCoroutineScope()
+    var showSaturdayBottomSheet by remember { mutableStateOf(false) }
+    var showHideConfirmDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        SaturdayScheduleManager.loadSettings()
+    }
 
     val currentMonth = remember { YearMonth.now() }
     val startMonth = remember { currentMonth.minusMonths(12) } // Adjust as needed
@@ -157,12 +172,37 @@ fun CalendarSection(
                 )
             }
         }
-        InfoNoteCard(
-            text = "Tap the ? icon in the top app bar anytime for help",
-            icon = Icons.AutoMirrored.Outlined.HelpOutline,
+
+        Column(
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 90.dp)
+                .padding(bottom = 90.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (!SaturdayScheduleManager.isCardDismissed) {
+                SaturdayScheduleCard(
+                    onOpenBottomSheet = { showSaturdayBottomSheet = true },
+                    onDismissRequest = { showHideConfirmDialog = true }
+                )
+            }
+            InfoNoteCard(
+                text = "Tap the ? icon in the top app bar anytime for help",
+                icon = Icons.AutoMirrored.Outlined.HelpOutline
+            )
+        }
+    }
+
+    if (showHideConfirmDialog) {
+        SaturdayHideConfirmDialog(
+            onDismiss = { showHideConfirmDialog = false },
+            onConfirmHide = { SaturdayScheduleManager.updateCardDismissed(true) }
+        )
+    }
+
+    if (showSaturdayBottomSheet) {
+        SaturdayScheduleBottomSheet(
+            onDismiss = { showSaturdayBottomSheet = false }
         )
     }
 }
