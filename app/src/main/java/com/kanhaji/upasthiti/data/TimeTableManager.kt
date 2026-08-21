@@ -433,19 +433,20 @@ object TimeTableManager {
     }
 
     fun getClasses(date: LocalDate): List<ClassEntity> {
-        val dayOfWeek = date.dayOfWeek
-        val baseClasses = getClasses(dayOfWeek)
+        val effectiveDayOfWeek = com.kanhaji.upasthiti.features.home.data.SaturdayScheduleManager.resolveDayOfWeek(date) ?: date.dayOfWeek
+        val baseClasses = getClasses(effectiveDayOfWeek)
         if (classShiftOverrides.isEmpty()) return baseClasses
 
+        val dayOfWeek = date.dayOfWeek
         val dateIso = date.toString()
         val activeOverrides = classShiftOverrides.filter { dateIso >= it.effectiveDate }
         if (activeOverrides.isEmpty()) return baseClasses
 
         val classes = baseClasses.toMutableList()
 
-        // Remove classes shifted away from this dayOfWeek for date >= effectiveDate
+        // Remove classes shifted away from this dayOfWeek (or effectiveDayOfWeek) for date >= effectiveDate
         activeOverrides.forEach { override ->
-            if (override.originalDayOfWeek.equals(dayOfWeek.name, ignoreCase = true)) {
+            if (override.originalDayOfWeek.equals(effectiveDayOfWeek.name, ignoreCase = true) || override.originalDayOfWeek.equals(dayOfWeek.name, ignoreCase = true)) {
                 classes.removeAll {
                     it.subject.subjectId.equals(override.courseCode, ignoreCase = true) &&
                             it.time.equals(override.originalTime, ignoreCase = true)
@@ -453,9 +454,9 @@ object TimeTableManager {
             }
         }
 
-        // Add classes shifted into this dayOfWeek for date >= effectiveDate
+        // Add classes shifted into this dayOfWeek (or effectiveDayOfWeek) for date >= effectiveDate
         activeOverrides.forEach { override ->
-            if (override.newDayOfWeek.equals(dayOfWeek.name, ignoreCase = true)) {
+            if (override.newDayOfWeek.equals(effectiveDayOfWeek.name, ignoreCase = true) || override.newDayOfWeek.equals(dayOfWeek.name, ignoreCase = true)) {
                 val subjectName = getCourseName(override.courseCode)
                 val subject = Subject(
                     displayName = if (subjectName.isNotBlank()) subjectName else override.courseCode,

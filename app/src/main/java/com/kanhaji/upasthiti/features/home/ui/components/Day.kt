@@ -51,6 +51,7 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
 
     var showUploadPromptDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
+    var showSaturdayDialog by remember { mutableStateOf(false) }
     var showWeekendDialog by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedDayOfWeek by remember { mutableStateOf<DayOfWeek?>(null) }
@@ -68,9 +69,14 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
                         showUploadPromptDialog = true
                         return@OutlinedCard
                     }
-                    selectedDate = day.date.toKotlinLocalDate()
+                    val dateKotlin = day.date.toKotlinLocalDate()
+                    selectedDate = dateKotlin
                     selectedDayOfWeek = day.date.dayOfWeek
-                    if (day.date.dayOfWeek == java.time.DayOfWeek.SATURDAY || day.date.dayOfWeek == java.time.DayOfWeek.SUNDAY) {
+
+                    val resolvedSaturday = com.kanhaji.upasthiti.features.home.data.SaturdayScheduleManager.resolveDayOfWeek(dateKotlin)
+                    if (day.date.dayOfWeek == java.time.DayOfWeek.SATURDAY && resolvedSaturday != null) {
+                        showSaturdayDialog = true
+                    } else if (day.date.dayOfWeek == java.time.DayOfWeek.SATURDAY || day.date.dayOfWeek == java.time.DayOfWeek.SUNDAY) {
                         showWeekendDialog = true
                     } else {
                         showDateDialog = true
@@ -197,8 +203,8 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
 
     var dialogClasses by remember(selectedDate) { mutableStateOf<List<ClassEntity>?>(null) }
 
-    androidx.compose.runtime.LaunchedEffect(showDateDialog, selectedDate) {
-        if (showDateDialog && selectedDate != null) {
+    androidx.compose.runtime.LaunchedEffect(showDateDialog, showSaturdayDialog, selectedDate) {
+        if ((showDateDialog || showSaturdayDialog) && selectedDate != null) {
             dialogClasses = screenModel.getClassesForDateUseCase(selectedDate!!)
         }
     }
@@ -238,6 +244,18 @@ fun Day(day: CalendarDay, screenModel: HomeScreenModel) {
             showDateDialog = false
             dialogClasses = null
         }
+    }
+
+    if (showSaturdayDialog && selectedDate != null && dialogClasses != null) {
+        SaturdayAttendanceStepperDialog(
+            initialClasses = dialogClasses!!,
+            screenModel = screenModel,
+            date = selectedDate!!,
+            onDismiss = {
+                showSaturdayDialog = false
+                dialogClasses = null
+            }
+        )
     }
 
     if (showWeekendDialog && selectedDate != null) {

@@ -41,6 +41,9 @@ class HomeScreenModel(
 
     init {
         screenModelScope.launch {
+            com.kanhaji.upasthiti.features.home.data.SaturdayScheduleManager.loadSettings()
+        }
+        screenModelScope.launch {
             androidx.compose.runtime.snapshotFlow { com.kanhaji.upasthiti.data.TimeTableManager.activeTimetableData }
                 .collect {
                     val repository = TimetableRepositoryImpl()
