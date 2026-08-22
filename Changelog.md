@@ -6,11 +6,13 @@
 
 ### In-App Update System v2, Saturday Schedule & Class Swap
 
-- **Seamless In-App Update System**:
+- **Seamless In-App Update System v2**:
+  - **3-Tier Update Priority Model**: Granular update urgency supporting `OPTIONAL` (silent launch with top-bar alert), `RECOMMENDED` (launch modal bottom sheet), and `CRITICAL` (non-dismissible required update dialog).
+  - **Priority Status Indicator**: Color-coded live badge (🟢 Green for Optional, 🟡 Amber for Recommended, 🔴 Red for Critical) within the changelog viewer.
+  - **Expressive Animated Pill Button**: Smoothly expanding `UpdateButton` in the top app bar with delayed entrance and in-flight download progress morphing.
   - **In-App Streaming Download**: Overhauled download engine with zero-memory chunked streaming, multi-hop redirect resolution, and real-time smoothly animated progress bar.
   - **SHA-256 Checksum Verification**: Single-pass cryptographic integrity validation before handing off to the Android Package Installer.
-  - **Native Compose Markdown Viewer**: Built-in themed Markdown changelog viewer that directly renders release notes from GitHub Pages.
-  - **Dual-Mode UX**: Subtle top app bar animated icon for optional updates, and a modal blocking sheet for mandatory/breaking updates.
+  - **Native Compose Markdown Viewer**: Built-in themed Markdown changelog viewer that directly renders release notes.
 
 - **Saturday Schedule & Rotation Management**:
   - **5-Week Automatic Rotation**: Automatically cycles Saturday timetables (`Mon → Tue → Wed → Thu → Fri`) based on semester start date.

@@ -20,7 +20,7 @@ object UpasthitiUtils {
             }
         }
 
-    const val BASE_URL = "http://10.204.147.86:8000"
+    const val BASE_URL = "https://kanha321.github.io/Upastithi"
     const val UPDATE_ENDPOINT = "/update.json"
 
     var updateChecked by mutableStateOf(false)
