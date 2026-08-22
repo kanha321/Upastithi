@@ -142,5 +142,13 @@ fun SettingsComponent() {
                 }
             )
         }
+
+        if (SettingsScreenModel.showUpdateBottomSheet) {
+            com.kanhaji.upasthiti.features.home.ui.components.AppUpdateBottomSheet(
+                onDismiss = {
+                    SettingsScreenModel.showUpdateBottomSheet = false
+                }
+            )
+        }
     }
 }

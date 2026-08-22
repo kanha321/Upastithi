@@ -46,6 +46,11 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
     }
 }
 
+configurations.all {
+    resolutionStrategy.cacheDynamicVersionsFor(24, "hours")
+    resolutionStrategy.cacheChangingModulesFor(24, "hours")
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)

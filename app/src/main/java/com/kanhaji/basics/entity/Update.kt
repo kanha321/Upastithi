@@ -4,10 +4,15 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Update(
-    val latestVersionCode: Long,
-    val latestVersionName: String,
+    val latestVersionCode: Long = 0,
+    val latestVersionName: String = "",
     val downloadUrl: String = "",
+    val changelog: String = "https://kanha321.github.io/Upastithi/Changelog.md",
+    val sha256: String = "",
+    val fileSizeBytes: Long = 0,
+    val forceUpdate: Boolean = false,
+    val minSupportedVersionCode: Int = 0,
+    // Legacy fields kept for backward compatibility with older serializer caches
     val downloadMCA1: String = "",
-    val downloadMCA3: String = "",
-    val changelog: String = ""
+    val downloadMCA3: String = ""
 )
