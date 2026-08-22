@@ -122,7 +122,7 @@ fun ScheduleEventCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Schedule,
-                                    contentDescription = "Shifted Class",
+                                    contentDescription = "Shift Class",
                                     modifier = Modifier.size(14.dp),
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                                 )

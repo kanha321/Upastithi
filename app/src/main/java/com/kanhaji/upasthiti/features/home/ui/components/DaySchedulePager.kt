@@ -89,6 +89,15 @@ fun DaySchedulePager(
                     effectiveDate = effectiveDate
                 )
                 shiftingEvent = null
+            },
+            onConfirmSwap = { targetEvent, targetDay, effectiveDate ->
+                screenModel.swapClasses(
+                    class1 = classEntity,
+                    targetEvent = targetEvent,
+                    targetDay = targetDay,
+                    effectiveDate = effectiveDate
+                )
+                shiftingEvent = null
             }
         )
     }

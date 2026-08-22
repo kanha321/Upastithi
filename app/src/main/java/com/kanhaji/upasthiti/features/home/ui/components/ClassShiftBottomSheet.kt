@@ -1,97 +1,83 @@
 package com.kanhaji.upasthiti.features.home.ui.components
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kanhaji.upasthiti.data.TimeTableManager
 import com.kanhaji.upasthiti.features.home.domain.model.ClassEntity
+import com.kanhaji.upasthiti.features.home.domain.model.ScheduleEvent
+import com.kanhaji.upasthiti.screen.edit.components.EditTimePickerDialog
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import com.kanhaji.upasthiti.screen.edit.components.EditTimePickerDialog
-
-import com.kanhaji.basics.composables.KTextField
-
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.ui.text.withStyle
-import com.kanhaji.upasthiti.data.TimeTableManager
-
-import androidx.compose.foundation.layout.imePadding
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClassShiftBottomSheet(
     classEntity: ClassEntity,
     currentDate: LocalDate,
     onDismiss: () -> Unit,
-    onConfirmShift: (newDay: DayOfWeek, newTime: String, newLocation: String, effectiveDate: LocalDate) -> Unit
+    onConfirmShift: (newDay: DayOfWeek, newTime: String, newLocation: String, effectiveDate: LocalDate) -> Unit,
+    onConfirmSwap: (targetEvent: ScheduleEvent, targetDay: DayOfWeek, effectiveDate: LocalDate) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val coroutineScope = rememberCoroutineScope()
 
+    // Shift Mode State
     var selectedDay by remember { mutableStateOf(classEntity.dayOfWeek) }
     var timeInput by remember { mutableStateOf(classEntity.time) }
     var locationInput by remember { mutableStateOf(classEntity.roomNo) }
     var showClockPicker by remember { mutableStateOf(false) }
-    val effectiveDate = remember { currentDate }
 
-    val daysOfWeek = remember {
-        listOf(
-            DayOfWeek.MONDAY,
-            DayOfWeek.TUESDAY,
-            DayOfWeek.WEDNESDAY,
-            DayOfWeek.THURSDAY,
-            DayOfWeek.FRIDAY
-        )
-    }
+    // Swap Mode State
+    var selectedSwapTargetDay by remember { mutableStateOf(classEntity.dayOfWeek) }
+    var selectedSwapTargetEvent by remember { mutableStateOf<ScheduleEvent?>(null) }
+
+    val effectiveDate = remember { currentDate }
 
     val parsedTimes = remember(timeInput) { timeInput.split("-").map { it.trim() } }
     val currentStart = parsedTimes.getOrNull(0) ?: "08:00"
@@ -121,9 +107,9 @@ fun ClassShiftBottomSheet(
     val scrollState = rememberScrollState()
     val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
 
-    androidx.compose.runtime.LaunchedEffect(imeBottomPadding) {
+    LaunchedEffect(imeBottomPadding) {
         if (imeBottomPadding > 0.dp) {
-            kotlinx.coroutines.delay(150)
+            delay(150)
             scrollState.animateScrollTo(scrollState.maxValue)
         }
     }
@@ -141,288 +127,135 @@ fun ClassShiftBottomSheet(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 24.dp)
+                .animateContentSize(
+                    animationSpec = tween(durationMillis = 250, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                )
                 .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header Title Card
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Reschedule Class",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    val subjectDisplayName = remember(classEntity) {
-                        val name = TimeTableManager.getCourseName(classEntity.subject.subjectId)
-                        if (name.isNotBlank()) name else classEntity.subject.displayName
-                    }
-                    Text(
-                        text = "$subjectDisplayName • ${classEntity.time}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            // Card 1: Target Day Selection
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.outlinedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            // Header Title
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Shift / Swap Class",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = "Target Day",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "Target Day of Week",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp)
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        daysOfWeek.forEach { day ->
-                            val dayLabel = day.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
-                            FilterChip(
-                                selected = selectedDay == day,
-                                onClick = { selectedDay = day },
-                                label = { Text(dayLabel, fontWeight = FontWeight.Bold) },
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            )
-                        }
-                    }
+                val subjectDisplayName = remember(classEntity) {
+                    val name = TimeTableManager.getCourseName(classEntity.subject.subjectId)
+                    if (name.isNotBlank()) name else classEntity.subject.displayName
                 }
-            }
-
-            // Card 2: Timing & Venue Inputs
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.outlinedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                Text(
+                    text = "$subjectDisplayName • ${classEntity.time}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Time & Location",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    // Interactive M3 Time Setting Surface Card
-                    Surface(
-                        onClick = { showClockPicker = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    modifier = Modifier.size(40.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AccessTime,
-                                        contentDescription = "Clock",
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        modifier = Modifier.padding(10.dp)
-                                    )
-                                }
-
-                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(
-                                        text = "NEW CLASS TIME",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = timeInput.ifEmpty { "08:00 - 09:00" },
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-
-                            AssistChip(
-                                onClick = { showClockPicker = true },
-                                label = { Text("Change", fontWeight = FontWeight.Bold) },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Change Time",
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                },
-                                colors = AssistChipDefaults.assistChipColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                                    labelColor = MaterialTheme.colorScheme.primary
-                                ),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                                )
-                            )
-                        }
-                    }
-
-                    val roomSuggestions = remember { TimeTableManager.getAllRooms() }
-
-                    KTextField(
-                        value = locationInput,
-                        onValueChange = { locationInput = it },
-                        label = "Room / Location",
-                        placeholder = "e.g. GS8",
-                        leadingIcon = Icons.Default.Place,
-                        suggestions = roomSuggestions,
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Location",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
             }
 
-            // Collision Warning Banner
-            collidingEvent?.let { ev ->
-                val courseName = TimeTableManager.getCourseName(ev.course_code)
-                Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = "Warning",
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "Time Conflict: Overlaps with $courseName (${ev.time}) on $dayName",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
+            // Spring Animated Mode Switcher
+            RescheduleTabRow(
+                selectedTabIndex = pagerState.currentPage,
+                onTabSelected = { page ->
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(page)
                     }
                 }
-            }
-
-            // Card 3: Effective Date Banner (InfoNoteCard)
-            val monthName = effectiveDate.month.name.lowercase().take(3).replaceFirstChar { it.uppercase() }
-            val formattedDate = "${effectiveDate.dayOfMonth} $monthName ${effectiveDate.year}"
-            val annotatedBannerText = remember(formattedDate) {
-                androidx.compose.ui.text.buildAnnotatedString {
-                    append("Shift effective from ")
-                    withStyle(androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(formattedDate)
-                    }
-                    append(" onwards (past sessions remain unchanged)")
-                }
-            }
-            InfoNoteCard(
-                text = "",
-                annotatedText = annotatedBannerText,
-                prefKey = "shift_effective_info_dismissed",
-                modifier = Modifier.fillMaxWidth()
             )
+
+            // Swipeable HorizontalPager
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) { page ->
+                if (page == 0) {
+                    // Page 0: Shift Mode
+                    ShiftClassSection(
+                        selectedDay = selectedDay,
+                        onDaySelected = { selectedDay = it },
+                        timeInput = timeInput,
+                        onTimeClicked = { showClockPicker = true },
+                        locationInput = locationInput,
+                        onLocationChanged = { locationInput = it },
+                        collidingEventName = collidingEvent?.let { ev ->
+                            val name = TimeTableManager.getCourseName(ev.course_code)
+                            if (name.isNotBlank()) name else ev.course_code
+                        }
+                    )
+                } else {
+                    // Page 1: Swap Mode
+                    SwapClassSection(
+                        sourceClass = classEntity,
+                        selectedTargetDay = selectedSwapTargetDay,
+                        onTargetDayChanged = {
+                            selectedSwapTargetDay = it
+                            selectedSwapTargetEvent = null // Reset selected event when day changes
+                        },
+                        selectedTargetEvent = selectedSwapTargetEvent,
+                        onTargetEventSelected = { selectedSwapTargetEvent = it }
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
             // Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedButton(
                     onClick = onDismiss,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Cancel",
-                        modifier = Modifier.padding(end = 6.dp)
+                        modifier = Modifier.size(18.dp)
                     )
-                    Text("Cancel", fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.padding(horizontal = 2.dp))
+                    Text("Cancel", fontWeight = FontWeight.SemiBold)
                 }
 
-                Button(
-                    onClick = {
-                        if (collidingEvent == null && timeInput.isNotBlank()) {
+                if (pagerState.currentPage == 0) {
+                    // Confirm Shift Button
+                    Button(
+                        onClick = {
                             onConfirmShift(selectedDay, timeInput, locationInput, effectiveDate)
-                        }
-                    },
-                    enabled = collidingEvent == null && timeInput.isNotBlank(),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Save,
-                        contentDescription = "Save",
-                        modifier = Modifier.padding(end = 6.dp)
-                    )
-                    Text("Save Shift", fontWeight = FontWeight.Bold)
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1.3f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Save,
+                            contentDescription = "Save Shift",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 2.dp))
+                        Text("Confirm Shift", fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    // Confirm Swap Button
+                    Button(
+                        onClick = {
+                            selectedSwapTargetEvent?.let { targetEvent ->
+                                onConfirmSwap(targetEvent, selectedSwapTargetDay, effectiveDate)
+                            }
+                        },
+                        enabled = selectedSwapTargetEvent != null,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1.3f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SwapHoriz,
+                            contentDescription = "Swap Classes",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 2.dp))
+                        Text("Confirm Swap", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

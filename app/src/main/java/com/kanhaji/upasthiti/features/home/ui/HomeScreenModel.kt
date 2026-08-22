@@ -25,6 +25,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import com.kanhaji.upasthiti.features.home.data.local.entity.ClassShiftOverrideEntity
 import com.kanhaji.upasthiti.features.home.data.repository.TimetableRepositoryImpl
+import com.kanhaji.upasthiti.features.home.domain.model.ScheduleEvent
 import com.kanhaji.upasthiti.features.home.domain.repository.TimetableRepository
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
@@ -113,6 +114,72 @@ class HomeScreenModel(
                         newTime = newTime,
                         effectiveDate = effectiveDate.toString()
                     )
+            }
+            refreshAttendance()
+        }
+    }
+
+    fun swapClasses(
+        class1: ClassEntity,
+        targetEvent: ScheduleEvent,
+        targetDay: DayOfWeek,
+        effectiveDate: LocalDate,
+        timetableRepository: TimetableRepository = TimetableRepositoryImpl()
+    ) {
+        screenModelScope.launch {
+            val activeMeta = timetableRepository.getActiveTimetableDirect()
+            val timetableId = activeMeta?.id ?: com.kanhaji.upasthiti.data.TimeTableManager.getTimetableId()
+
+            // 1. Override for class1 moving to targetDay @ targetEvent.time
+            val override1 = ClassShiftOverrideEntity(
+                timetableId = timetableId,
+                courseCode = class1.subject.subjectId,
+                originalDayOfWeek = class1.dayOfWeek.name,
+                originalTime = class1.time,
+                effectiveDate = effectiveDate.toString(),
+                newDayOfWeek = targetDay.name,
+                newTime = targetEvent.time,
+                newLocation = targetEvent.location ?: ""
+            )
+
+            // 2. Override for targetEvent moving to class1.dayOfWeek @ class1.time
+            val override2 = ClassShiftOverrideEntity(
+                timetableId = timetableId,
+                courseCode = targetEvent.course_code,
+                originalDayOfWeek = targetDay.name,
+                originalTime = targetEvent.time,
+                effectiveDate = effectiveDate.toString(),
+                newDayOfWeek = class1.dayOfWeek.name,
+                newTime = class1.time,
+                newLocation = class1.roomNo
+            )
+
+            timetableRepository.saveClassShiftOverride(override1)
+            timetableRepository.saveClassShiftOverride(override2)
+
+            com.kanhaji.upasthiti.data.TimeTableManager.addClassShiftOverride(override1)
+            com.kanhaji.upasthiti.data.TimeTableManager.addClassShiftOverride(override2)
+
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val attendanceDao = com.kanhaji.upasthiti.features.home.data.local.UpasthitiDatabase
+                    .getInstance(AndroidContext.appContext)
+                    .attendanceDao()
+
+                attendanceDao.updateShiftedAttendanceTime(
+                    timetableId = timetableId,
+                    subjectId = class1.subject.subjectId,
+                    originalTime = class1.time,
+                    newTime = targetEvent.time,
+                    effectiveDate = effectiveDate.toString()
+                )
+
+                attendanceDao.updateShiftedAttendanceTime(
+                    timetableId = timetableId,
+                    subjectId = targetEvent.course_code,
+                    originalTime = targetEvent.time,
+                    newTime = class1.time,
+                    effectiveDate = effectiveDate.toString()
+                )
             }
             refreshAttendance()
         }
