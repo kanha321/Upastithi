@@ -23,6 +23,7 @@ import com.kanhaji.upasthiti.features.home.domain.usecase.SaveAttendanceUseCase
 import com.kanhaji.upasthiti.util.UpasthitiUtils
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import com.kanhaji.upasthiti.features.home.data.local.entity.ClassShiftOverrideEntity
 import com.kanhaji.upasthiti.features.home.data.repository.TimetableRepositoryImpl
 import com.kanhaji.upasthiti.features.home.domain.model.ScheduleEvent
@@ -218,9 +219,22 @@ class HomeScreenModel(
 
     suspend fun getLatestVersion(): Update {
         return try {
-            val response = httpClient.get(UpasthitiUtils.BASE_URL + UpasthitiUtils.UPDATE_ENDPOINT)
-            response.body()
+            val url = "${UpasthitiUtils.BASE_URL}${UpasthitiUtils.UPDATE_ENDPOINT}?t=${System.currentTimeMillis()}"
+            println(">>> [UPDATE_CHECK] Requesting: $url")
+            val response: io.ktor.client.statement.HttpResponse = httpClient.get(url) {
+                headers.append(io.ktor.http.HttpHeaders.CacheControl, "no-cache, no-store, must-revalidate")
+                headers.append("Pragma", "no-cache")
+                headers.append("Expires", "0")
+                headers.append("Connection", "close")
+            }
+            val rawBody: String = response.body()
+            println(">>> [UPDATE_CHECK] Raw Response (${response.status}):\n$rawBody")
+            val update: Update = com.kanhaji.basics.networking.json.decodeFromString(rawBody)
+            println(">>> [UPDATE_CHECK] Parsed Update -> VersionCode: ${update.latestVersionCode}, Priority: ${update.priority}, Effective: ${update.getEffectivePriority(UpasthitiUtils.appVersionCode)}")
+            update
         } catch (e: Exception) {
+            println(">>> [UPDATE_CHECK] Error fetching update: ${e.message}")
+            e.printStackTrace()
             Update(
                 latestVersionCode = -1,
                 latestVersionName = "Offline",
@@ -233,22 +247,35 @@ class HomeScreenModel(
 
     fun getUpdateInfo() {
         screenModelScope.launch {
+            Updater.showCriticalDialog = false
+            Updater.showUpdateBottomSheet = false
+            isUpdateAvailable = false
+
             val latest = getLatestVersion()
             Updater.update = latest
             UpasthitiUtils.updateChecked = true
 
             if (latest.latestVersionCode > UpasthitiUtils.appVersionCode) {
                 isUpdateAvailable = true
-                val force = latest.forceUpdate || (latest.minSupportedVersionCode > 0 && UpasthitiUtils.appVersionCode < latest.minSupportedVersionCode)
-                Updater.isForceUpdate = force
-                if (force) {
-                    Updater.showUpdateBottomSheet = true
+                val effectivePriority = latest.getEffectivePriority(UpasthitiUtils.appVersionCode)
+                Updater.updatePriority = effectivePriority
+                Updater.isForceUpdate = (effectivePriority == com.kanhaji.basics.entity.UpdatePriority.CRITICAL)
+                
+                // Only auto-open on initial app launch / startup, not on every screen navigation
+                if (!Updater.hasAutoPromptedUpdateThisSession) {
+                    Updater.hasAutoPromptedUpdateThisSession = true
+                    if (effectivePriority == com.kanhaji.basics.entity.UpdatePriority.RECOMMENDED || effectivePriority == com.kanhaji.basics.entity.UpdatePriority.CRITICAL) {
+                        Updater.showUpdateBottomSheet = true
+                    }
                 }
                 Updater.fetchChangelog(latest.changelog.ifBlank { "https://kanha321.github.io/Upastithi/Changelog.md" })
                 Updater.prewarmConnection(latest.downloadUrl)
             } else {
                 isUpdateAvailable = false
                 Updater.isForceUpdate = false
+                Updater.updatePriority = com.kanhaji.basics.entity.UpdatePriority.OPTIONAL
+                Updater.showUpdateBottomSheet = false
+                Updater.showCriticalDialog = false
             }
         }
     }

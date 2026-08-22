@@ -111,8 +111,7 @@ fun HomeComponent(
     }
 
     LaunchedEffect(Unit) {
-        if (!UpasthitiUtils.updateChecked)
-            screenModel.getUpdateInfo()
+        screenModel.getUpdateInfo()
     }
 
     LaunchedEffect(Unit) {
@@ -184,9 +183,27 @@ fun HomeComponent(
             )
         }
     ) { innerPadding ->
-        if (Updater.showUpdateBottomSheet) {
+        if (Updater.showUpdateBottomSheet && screenModel.isUpdateAvailable) {
             com.kanhaji.upasthiti.features.home.ui.components.AppUpdateBottomSheet(
-                onDismiss = { Updater.showUpdateBottomSheet = false }
+                onDismiss = {
+                    Updater.showUpdateBottomSheet = false
+                    if (screenModel.isUpdateAvailable && Updater.updatePriority == com.kanhaji.basics.entity.UpdatePriority.CRITICAL) {
+                        Updater.showCriticalDialog = true
+                    }
+                }
+            )
+        }
+
+        if (Updater.showCriticalDialog && screenModel.isUpdateAvailable && Updater.updatePriority == com.kanhaji.basics.entity.UpdatePriority.CRITICAL) {
+            com.kanhaji.upasthiti.features.home.ui.components.CriticalUpdateDialog(
+                latestVersionName = Updater.update?.latestVersionName ?: "New Version",
+                onConfirmUpdate = {
+                    Updater.showCriticalDialog = false
+                    Updater.showUpdateBottomSheet = true
+                },
+                onExitApp = {
+                    (context as? android.app.Activity)?.finishAffinity()
+                }
             )
         }
 

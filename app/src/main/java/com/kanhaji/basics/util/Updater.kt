@@ -55,7 +55,10 @@ object Updater {
 
     var update by mutableStateOf<Update?>(null)
     var isForceUpdate by mutableStateOf(false)
+    var updatePriority by mutableStateOf(com.kanhaji.basics.entity.UpdatePriority.OPTIONAL)
     var showUpdateBottomSheet by mutableStateOf(false)
+    var showCriticalDialog by mutableStateOf(false)
+    var hasAutoPromptedUpdateThisSession = false
 
     private var downloadJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO)

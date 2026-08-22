@@ -191,15 +191,19 @@ object SettingsScreenModel : ScreenModel {
 
         screenModelScope.launch {
             try {
-                val response: HttpResponse = httpClient.get(
-                    UpasthitiUtils.BASE_URL + UpasthitiUtils.UPDATE_ENDPOINT
-                )
+                val url = "${UpasthitiUtils.BASE_URL}${UpasthitiUtils.UPDATE_ENDPOINT}?t=${System.currentTimeMillis()}"
+                val response: HttpResponse = httpClient.get(url) {
+                    headers.append(io.ktor.http.HttpHeaders.CacheControl, "no-cache, no-store, must-revalidate")
+                    headers.append("Pragma", "no-cache")
+                    headers.append("Expires", "0")
+                }
                 val updateData: Update = response.body()
                 
                 if (updateData.latestVersionCode > UpasthitiUtils.appVersionCode) {
+                    val effectivePriority = updateData.getEffectivePriority(UpasthitiUtils.appVersionCode)
                     com.kanhaji.basics.util.Updater.update = updateData
-                    val force = updateData.forceUpdate || (updateData.minSupportedVersionCode > 0 && UpasthitiUtils.appVersionCode < updateData.minSupportedVersionCode)
-                    com.kanhaji.basics.util.Updater.isForceUpdate = force
+                    com.kanhaji.basics.util.Updater.updatePriority = effectivePriority
+                    com.kanhaji.basics.util.Updater.isForceUpdate = (effectivePriority == com.kanhaji.basics.entity.UpdatePriority.CRITICAL)
                     com.kanhaji.basics.util.Updater.fetchChangelog(updateData.changelog.ifBlank { "https://kanha321.github.io/Upastithi/Changelog.md" })
                     showUpdateBottomSheet = true
                 } else if (updateData.latestVersionCode > 0) {

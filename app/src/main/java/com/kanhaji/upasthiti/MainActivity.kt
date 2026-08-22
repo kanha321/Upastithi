@@ -21,6 +21,10 @@ class MainActivity : ComponentActivity() {
         AndroidContext.appContext = this@MainActivity
         UpasthitiUtils.appVersionCode = packageManager.getPackageInfo(packageName, 0).longVersionCode
         UpasthitiUtils.appVersionName = packageManager.getPackageInfo(packageName, 0).versionName
+        com.kanhaji.basics.util.Updater.showCriticalDialog = false
+        com.kanhaji.basics.util.Updater.showUpdateBottomSheet = false
+        com.kanhaji.basics.util.Updater.updatePriority = com.kanhaji.basics.entity.UpdatePriority.OPTIONAL
+        com.kanhaji.basics.util.Updater.hasAutoPromptedUpdateThisSession = false
         println("App Version Code: ${UpasthitiUtils.appVersionCode}")
         println("App Version Name: ${UpasthitiUtils.appVersionName}")
         setContent {

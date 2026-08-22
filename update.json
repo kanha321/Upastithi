@@ -1,10 +1,10 @@
 {
-  "latestVersionCode": 9,
-  "latestVersionName": "v3.2.0",
-  "downloadUrl": "https://github.com/kanha321/Upastithi/releases/download/v3.2.0/Upasthiti-v3.2.0.apk",
+  "latestVersionCode": 10,
+  "latestVersionName": "v3.2.0-test",
+  "downloadUrl": "https://github.com/kanha321/Upastithi/releases/download/3.1.0/Upasthiti-v3.1.0.apk",
   "changelog": "https://kanha321.github.io/Upastithi/Changelog.md",
-  "sha256": "1d1de9875ab57f24c453dd602435cac322c7f439ddbeb536aad7eb6a3b97aed0",
-  "fileSizeBytes": 65801071,
-  "forceUpdate": false,
+  "sha256": "4f81dcb905731d4cceb0bdbf997ab568d7336bba1ff8168ebfc38420c67ddd2c",
+  "fileSizeBytes": 65538927,
+  "priority": "RECOMMENDED",
   "minSupportedVersionCode": 7
 }

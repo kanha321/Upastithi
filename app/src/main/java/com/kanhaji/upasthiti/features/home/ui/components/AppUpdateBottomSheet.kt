@@ -56,6 +56,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Color
+import com.kanhaji.basics.entity.UpdatePriority
 import com.kanhaji.basics.util.UpdateDownloadState
 import com.kanhaji.basics.util.Updater
 import com.kanhaji.upasthiti.core.designsystem.components.MarkdownViewer
@@ -74,8 +78,7 @@ fun AppUpdateBottomSheet(
     val isChangelogLoading = Updater.isChangelogLoading
 
     val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true,
-        confirmValueChange = { !isForceUpdate }
+        skipPartiallyExpanded = true
     )
 
     LaunchedEffect(Unit) {
@@ -104,9 +107,7 @@ fun AppUpdateBottomSheet(
     )
 
     ModalBottomSheet(
-        onDismissRequest = {
-            if (!isForceUpdate) onDismiss()
-        },
+        onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.background,
         dragHandle = { BottomSheetDefaults.DragHandle() },
@@ -207,12 +208,29 @@ fun AppUpdateBottomSheet(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "What's New in this Release",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val dotColor = when (Updater.updatePriority) {
+                                UpdatePriority.OPTIONAL -> Color(0xFF4CAF50)     // Green
+                                UpdatePriority.RECOMMENDED -> Color(0xFFFFB300) // Yellow / Amber
+                                UpdatePriority.CRITICAL -> Color(0xFFE53935)       // Red
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(dotColor, CircleShape)
+                            )
+
+                            Text(
+                                text = "What's New in this Release",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                         if (isChangelogLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
@@ -422,29 +440,12 @@ fun AppUpdateBottomSheet(
                     }
                 }
 
-                if (!isForceUpdate) {
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Later")
-                    }
-                } else {
-                    OutlinedButton(
-                        onClick = {
-                            (context as? Activity)?.finishAffinity()
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ExitToApp,
-                            contentDescription = null,
-                            modifier = Modifier.padding(end = 4.dp)
-                        )
-                        Text("Exit App")
-                    }
+                OutlinedButton(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (isForceUpdate) "Close" else "Later")
                 }
 
                 // Fallback Browser Link
