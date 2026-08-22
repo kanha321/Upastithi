@@ -1,18 +1,57 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+# Built application and release artifacts
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
 app/release/
-MATERIAL3_EXPRESSIVE_GUIDE.md
+app/build/
+build/
+/*/build/
+
+# Java / JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# Gradle cache and configuration
+.gradle/
+build/
+
+# Local configuration file (SDK location, etc)
+local.properties
+/local.properties
+
+# Log files
+*.log
+
+# Android Studio / IntelliJ IDEA
+*.iml
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/shelf/
+.idea/copilot*
+.idea/sonarlint/
+.idea/deploymentTargetSelector.xml
+.idea/deploymentTargetDropDown.xml
+
+# Kotlin and KSP caches
+.kotlin/
+.ksp/
+
+# Native build artifacts
+.externalNativeBuild/
+.cxx/
+/captures/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Project-specific ignored documentation & temp files
 docs/
+MATERIAL3_EXPRESSIVE_GUIDE.md

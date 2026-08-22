@@ -2,6 +2,33 @@
 
 ---
 
+## [3.2.0] - 04:01 PM / 22 August 2026
+
+### In-App Update System v2, Saturday Schedule & Class Swap
+
+- **Seamless In-App Update System**:
+  - **In-App Streaming Download**: Overhauled download engine with zero-memory chunked streaming, multi-hop redirect resolution, and real-time smoothly animated progress bar.
+  - **SHA-256 Checksum Verification**: Single-pass cryptographic integrity validation before handing off to the Android Package Installer.
+  - **Native Compose Markdown Viewer**: Built-in themed Markdown changelog viewer that directly renders release notes from GitHub Pages.
+  - **Dual-Mode UX**: Subtle top app bar animated icon for optional updates, and a modal blocking sheet for mandatory/breaking updates.
+
+- **Saturday Schedule & Rotation Management**:
+  - **5-Week Automatic Rotation**: Automatically cycles Saturday timetables (`Mon → Tue → Wed → Thu → Fri`) based on semester start date.
+  - **Manual Day Override**: Force any Saturday to follow a specific weekday's timetable.
+  - **In-Dialog Weekday Switcher**: Quickly switch Saturday's schedule directly from the attendance dialog with instant subject re-calculation.
+  - **Calendar Shortcut Banner**: Dismissible reminder card on the Calendar tab with a restore button in Settings.
+
+- **Class Rescheduling & Class Swap**:
+  - **Swipeable Reschedule Sheet**: `HorizontalPager` allowing smooth swipe and tap switching between **Shift Class** and **Swap Classes**.
+  - **Spring-Animated Mode Switcher**: Custom spring-physics tab row matching the timetable day tabs.
+  - **Duration-Safe Swapping**: Strictly allows swapping only between classes of the exact same slot duration (e.g. 1 hr lecture with 1 hr lecture; 3 hr lab with 3 hr lab).
+  - **Two-Way Room Persistence**: Automatically creates symmetric shift overrides in Room DB and updates attendance records across both days simultaneously.
+
+- **Build Performance Optimizations**:
+  - Right-sized JVM heap memory and eliminated remote plugin portal timeouts, slashing incremental build times from 2m 26s down to ~9s.
+
+---
+
 ## [3.1.0] - 04:04 AM / 09 August 2026
 
 ### Vector-Grid PDF Parser Rewrite
