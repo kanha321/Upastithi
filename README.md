@@ -1,6 +1,5 @@
-# 📘 Upasthiti (v3.0.0)
+# 📘 Upasthiti
 
-[![Version](https://img.shields.io/badge/version-v3.0.0-blue.svg)](https://github.com/kanha321/Upastithi/releases)
 [![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF.svg)](https://kotlinlang.org/)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20%7C%20Voyager%20%7C%20RoomDB-00C853.svg)](https://developer.android.com/training/data-storage/room)
 
