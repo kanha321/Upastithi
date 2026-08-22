@@ -175,13 +175,21 @@ fun HomeComponent(
                             contentDescription = "Help"
                         )
                     }
-                    AnimatedVisibility(screenModel.isUpdateAvailable && Updater.downloadProgress != 1f) {
-                        UpdateButton()
+                    AnimatedVisibility(screenModel.isUpdateAvailable) {
+                        UpdateButton(
+                            onClick = { Updater.showUpdateBottomSheet = true }
+                        )
                     }
                 }
             )
         }
     ) { innerPadding ->
+        if (Updater.showUpdateBottomSheet) {
+            com.kanhaji.upasthiti.features.home.ui.components.AppUpdateBottomSheet(
+                onDismiss = { Updater.showUpdateBottomSheet = false }
+            )
+        }
+
         if (showShareBottomSheet) {
             ShareExportBottomSheet(
                 onDismiss = { showShareBottomSheet = false }

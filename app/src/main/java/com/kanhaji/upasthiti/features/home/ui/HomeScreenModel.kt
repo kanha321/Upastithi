@@ -9,7 +9,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.kanhaji.basics.entity.Update
 import com.kanhaji.basics.networking.httpClient
-import com.kanhaji.basics.util.Updater.update
+import com.kanhaji.basics.util.Updater
 import com.kanhaji.upasthiti.AndroidContext
 import com.kanhaji.upasthiti.data.TimeTableManager
 import com.kanhaji.upasthiti.features.home.data.AttendanceStatus
@@ -166,10 +166,22 @@ class HomeScreenModel(
 
     fun getUpdateInfo() {
         screenModelScope.launch {
-            update = getLatestVersion()
+            val latest = getLatestVersion()
+            Updater.update = latest
             UpasthitiUtils.updateChecked = true
-            if (update != null && update!!.latestVersionCode > UpasthitiUtils.appVersionCode) {
+
+            if (latest.latestVersionCode > UpasthitiUtils.appVersionCode) {
                 isUpdateAvailable = true
+                val force = latest.forceUpdate || (latest.minSupportedVersionCode > 0 && UpasthitiUtils.appVersionCode < latest.minSupportedVersionCode)
+                Updater.isForceUpdate = force
+                if (force) {
+                    Updater.showUpdateBottomSheet = true
+                }
+                Updater.fetchChangelog(latest.changelog.ifBlank { "https://kanha321.github.io/Upastithi/Changelog.md" })
+                Updater.prewarmConnection(latest.downloadUrl)
+            } else {
+                isUpdateAvailable = false
+                Updater.isForceUpdate = false
             }
         }
     }

@@ -54,6 +54,7 @@ object SettingsScreenModel : ScreenModel {
     var showColorPicker by mutableStateOf(false)
     var showThemeDialog by mutableStateOf(false)
     var showSaturdayBottomSheet by mutableStateOf(false)
+    var showUpdateBottomSheet by mutableStateOf(false)
 
     fun getAcademicItems(): List<SettingItems> {
         val items = mutableListOf<SettingItems>()
@@ -196,22 +197,15 @@ object SettingsScreenModel : ScreenModel {
                 val updateData: Update = response.body()
                 
                 if (updateData.latestVersionCode > UpasthitiUtils.appVersionCode) {
-                    KToast.show(
-                        context,
-                        "🎉 New update available: ${updateData.latestVersionName}! Opening releases page...",
-                        Toast.LENGTH_LONG
-                    )
-                    try {
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            "https://github.com/kanha321/Upastithi/releases".toUri()
-                        )
-                        context.startActivity(intent)
-                    } catch (_: Exception) { }
+                    com.kanhaji.basics.util.Updater.update = updateData
+                    val force = updateData.forceUpdate || (updateData.minSupportedVersionCode > 0 && UpasthitiUtils.appVersionCode < updateData.minSupportedVersionCode)
+                    com.kanhaji.basics.util.Updater.isForceUpdate = force
+                    com.kanhaji.basics.util.Updater.fetchChangelog(updateData.changelog.ifBlank { "https://kanha321.github.io/Upastithi/Changelog.md" })
+                    showUpdateBottomSheet = true
                 } else if (updateData.latestVersionCode > 0) {
                     KToast.show(
                         context,
-                        "You are on the latest version (${UpasthitiUtils.appVersionName ?: "v3.0.0"})"
+                        "You are on the latest version (${UpasthitiUtils.appVersionName ?: "v3.1.0"})"
                     )
                 } else {
                     KToast.show(
